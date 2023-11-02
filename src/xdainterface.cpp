@@ -193,43 +193,37 @@ bool XdaInterface::connectDevice()
 {
 	XsPortInfo mtPort;
 	XsBaudRate baudrate = XBR_Invalid;
-	XsBaudRate config_baudrate = XBR_Invalid;
+
+        // Read device ID parameter if set
 	bool checkDeviceID = false;
-	std::string deviceId = "";
+	std::string deviceId;
+        get_parameter("device_id", deviceId);
+        if (!deviceId.empty())
+        {
+                checkDeviceID = true;
+                RCLCPP_INFO(get_logger(), "Found device ID parameter: %s.", deviceId.c_str());
+        }
 
 	// Check if scanning is enabled
 	bool scan_for_devices = false;
 	get_parameter("scan_for_devices", scan_for_devices);
 
 	if (!scan_for_devices){
-		// Read baudrate parameter(s)
-		int baudrateParam = 0;
-		get_parameter("baudrate", baudrateParam);
-		RCLCPP_INFO(get_logger(), "Found baudrate parameter: %d", baudrateParam);
-		baudrate = XsBaud::numericToRate(baudrateParam);
-
-		int config_baudrateParam = 0;
-		if (get_parameter("config_baudrate", config_baudrateParam))
-		{
-			RCLCPP_INFO(get_logger(), "Found config_baudrate parameter: %d", config_baudrateParam);
-			config_baudrate = XsBaud::numericToRate(config_baudrateParam);
-		}
-
-		// Read device ID parameter if set
-		get_parameter("device_id", deviceId);
-		if (deviceId != "")
-		{
-			checkDeviceID = true;
-			RCLCPP_INFO(get_logger(), "Found device ID parameter: %s.", deviceId.c_str());
-		}
+                // Read baudrate parameter
+                int baudrateParam = 0;
+                get_parameter("baudrate", baudrateParam);
+                RCLCPP_INFO(get_logger(), "Found baudrate parameter: %d", baudrateParam);
+                baudrate = XsBaud::numericToRate(baudrateParam);
 
 		// Read port parameter
 		std::string portName;
 		get_parameter("port", portName);
 		RCLCPP_INFO(get_logger(), "Found port name parameter: %s", portName.c_str());
 		mtPort = XsPortInfo(portName, baudrate);
+
+                // Try to connect
 		RCLCPP_INFO(get_logger(), "Scanning port %s ...", portName.c_str());
-		if (!XsScanner::scanPort(mtPort, baudrate) && !XsScanner::scanPort(mtPort, config_baudrate))
+		if (!XsScanner::scanPort(mtPort, baudrate))
 			return handleError("No MTi device found. Verify port and baudrate.");
 		if (checkDeviceID && mtPort.deviceId().toString().c_str() != deviceId)
 			return handleError("No MTi device found with matching device ID.");
@@ -272,21 +266,30 @@ bool XdaInterface::connectDevice()
 	m_device = m_control->device(mtPort.deviceId());
 	assert(m_device != 0);
 
-	RCLCPP_INFO(get_logger(), "Device: %s, with ID: %s opened.", m_device->productCode().toStdString().c_str(), m_device->deviceId().toString().c_str());
-
-	if (config_baudrate != XBR_Invalid)
-	{
-		const auto actualBaudrate = XsBaud::rateToNumeric(m_device->baudRate());
-		if (m_device->baudRate() != config_baudrate)
-		{
-			RCLCPP_INFO(get_logger(), "Detected baudrate: %d, configured baudrate: %d", XsBaud::rateToNumeric(m_device->baudRate()), XsBaud::rateToNumeric(config_baudrate));
-			RCLCPP_INFO(get_logger(), "Configuring baudrate to: %d", XsBaud::rateToNumeric(config_baudrate));
-			if (!m_device->setSerialBaudRate(config_baudrate))
-				return handleError("Could not configure baudate");
-		}
-	}
+	RCLCPP_INFO(get_logger(), "Device: %s, with ID: %s, using firmware: '%s' was opened.", m_device->productCode().toStdString().c_str(), m_device->deviceId().toString().c_str(), m_device->firmwareVersion().toString().c_str());
 
 	m_device->addCallbackHandler(&m_xdaCallback);
+
+        // Check if current baudrate differs from desired and apply a new one if necessary
+        XsBaudRate config_baudrate = XBR_Invalid;
+        int config_baudrateParam = 0;
+        if (get_parameter("config_baudrate", config_baudrateParam))
+        {
+                RCLCPP_INFO(get_logger(), "Found config_baudrate parameter: %d", config_baudrateParam);
+                config_baudrate = XsBaud::numericToRate(config_baudrateParam);
+        }
+        if (config_baudrate != XBR_Invalid)
+        {
+                if (m_device->baudRate() != config_baudrate)
+                {
+                        RCLCPP_INFO(get_logger(), "Detected baudrate: %d, desired baudrate: %d", XsBaud::rateToNumeric(m_device->baudRate()), XsBaud::rateToNumeric(config_baudrate));
+                        RCLCPP_INFO(get_logger(), "Configuring baudrate to: %d", XsBaud::rateToNumeric(config_baudrate));
+                        if (!m_device->setSerialBaudRate(config_baudrate))
+                                return handleError("Could not configure baudate.");
+                        if (!m_device->reset())
+                                return handleError("Could not reset device.");
+                }
+        }
 
 	return true;
 }

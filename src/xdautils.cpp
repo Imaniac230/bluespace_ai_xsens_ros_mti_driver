@@ -94,7 +94,7 @@ std::string get_xs_data_identifier_name(XsDataIdentifier identifier)
         case XDI_Rssi: return "XDI_Rssi";
         case XDI_DeviceId: return "XDI_DeviceId";
         case XDI_LocationId: return "XDI_LocationId";
-        default:    return "???";
+        default: return "Unknown";
     }
 }
 
@@ -204,7 +204,7 @@ bool get_xs_data_identifier_by_name(const std::string& name, XsDataIdentifier& i
 
 bool parseConfigLine(const std::string& line, std::string& name, int& value)
 {
-	std::istringstream stream;
+    std::istringstream stream;
     stream.str(line);
 	int index=0;
 	for (std::string part; std::getline(stream, part, '='); index++) {

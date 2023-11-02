@@ -79,7 +79,7 @@ class XdaInterface : public rclcpp::Node
 {
 public:
 	explicit XdaInterface(const std::string &node_name, const rclcpp::NodeOptions &options=rclcpp::NodeOptions());
-	~XdaInterface();
+	~XdaInterface() override;
 
 	void spinFor(std::chrono::milliseconds timeout);
 	void registerPublishers();
