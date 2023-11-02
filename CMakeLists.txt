@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5)
 project(bluespace_ai_xsens_mti_driver)
 
 cmake_policy(SET CMP0057 NEW)
@@ -82,6 +82,7 @@ if(BUILD_TESTING)
   ament_add_gtest(xda_test src/xdautils.cpp test/xdautils_test.cpp)
   target_include_directories(xda_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib/xspublic>
+  	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>)
 endif()
 
