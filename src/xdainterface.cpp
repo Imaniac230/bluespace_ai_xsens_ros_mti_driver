@@ -346,6 +346,9 @@ bool XdaInterface::configureDevice()
 			if (!parseConfigLine(cfg, data_identifier, output_frequency))
 				return handleError("Could not parse line: '" + cfg + "'.");
 
+                        RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(data_identifier).c_str(),
+                                    get_xs_format_identifier_name(data_identifier).c_str(), output_frequency);
+
                         // Check if the data type supports the specified frequency
                         const std::vector<int> supported_rates = m_device->supportedUpdateRates(data_identifier);
                         if (std::find(supported_rates.begin(), supported_rates.end(), output_frequency) == std::end(supported_rates))
@@ -359,9 +362,6 @@ bool XdaInterface::configureDevice()
                                 }
                                 return handleError(oss.str());
                         }
-
-			RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(data_identifier).c_str(),
-                                    get_xs_format_identifier_name(data_identifier).c_str(), output_frequency);
 
 			newConfigArray.push_back(XsOutputConfiguration(data_identifier, output_frequency));
 		}
@@ -437,11 +437,11 @@ bool XdaInterface::configureDevice()
                 XsDeviceOptionFlag new_flags = XDOF_None;
                 for (const auto& flag_str : option_flags)
                 {
+                        RCLCPP_INFO(get_logger(), " - %s", flag_str.c_str());
+
                         XsDeviceOptionFlag flag = XDOF_None;
                         if (!get_xs_enabled_flag_by_name(flag_str, flag))
                                 return handleError("Invalid option flag '" + flag_str + "'.");
-
-                        RCLCPP_INFO(get_logger(), " - %s", flag_str.c_str());
 
                         new_flags = new_flags | flag;
                 }
