@@ -257,11 +257,11 @@ bool XdaInterface::connectDevice()
 	if (mtPort.empty())
 		return handleError("No MTi device found.");
 
-	RCLCPP_INFO(get_logger(), "Found a device with ID: %s @ port: %s, baudrate: %d", mtPort.deviceId().toString().toStdString().c_str(), mtPort.portName().toStdString().c_str(), XsBaud::rateToNumeric(mtPort.baudrate()));
+	RCLCPP_INFO(get_logger(), "Found a device with ID: %s @ port: %s, baudrate: %d.", mtPort.deviceId().toString().toStdString().c_str(), mtPort.portName().toStdString().c_str(), XsBaud::rateToNumeric(mtPort.baudrate()));
 
 	RCLCPP_INFO(get_logger(), "Opening port %s ...", mtPort.portName().toStdString().c_str());
 	if (!m_control->openPort(mtPort))
-		return handleError("Could not open port");
+		return handleError("Could not open port.");
 
 	m_device = m_control->device(mtPort.deviceId());
 	assert(m_device != 0);
@@ -275,15 +275,15 @@ bool XdaInterface::connectDevice()
         int config_baudrateParam = 0;
         if (get_parameter("config_baudrate", config_baudrateParam))
         {
-                RCLCPP_INFO(get_logger(), "Found config_baudrate parameter: %d", config_baudrateParam);
+                RCLCPP_INFO(get_logger(), "Found config_baudrate parameter: %d.", config_baudrateParam);
                 config_baudrate = XsBaud::numericToRate(config_baudrateParam);
         }
         if (config_baudrate != XBR_Invalid)
         {
                 if (m_device->baudRate() != config_baudrate)
                 {
-                        RCLCPP_INFO(get_logger(), "Detected baudrate: %d, desired baudrate: %d", XsBaud::rateToNumeric(m_device->baudRate()), XsBaud::rateToNumeric(config_baudrate));
-                        RCLCPP_INFO(get_logger(), "Configuring baudrate to: %d", XsBaud::rateToNumeric(config_baudrate));
+                        RCLCPP_INFO(get_logger(), "Detected baudrate: %d, desired baudrate: %d.", XsBaud::rateToNumeric(m_device->baudRate()), XsBaud::rateToNumeric(config_baudrate));
+                        RCLCPP_INFO(get_logger(), "Configuring baudrate to: %d.", XsBaud::rateToNumeric(config_baudrate));
                         if (!m_device->setSerialBaudRate(config_baudrate))
                                 return handleError("Could not configure baudate.");
                         if (!m_device->reset())
@@ -309,57 +309,53 @@ bool XdaInterface::configureDevice()
 	std::string selected_profile;
 	if (get_parameter("onboard_filter_profile", selected_profile) && !selected_profile.empty())
 	{
-		RCLCPP_INFO(get_logger(), "Found filter profile parameter: %s", selected_profile.c_str());
+		RCLCPP_INFO(get_logger(), "Found filter profile parameter: %s.", selected_profile.c_str());
 
 		if (current_profile.label() == selected_profile)
 		{
-			RCLCPP_INFO(get_logger(), "Onboard filter profile already setup to correctly");
+			RCLCPP_INFO(get_logger(), "Matching onboard filter profile already set.");
 		}
 		else
 		{
-			RCLCPP_INFO(get_logger(), "Selecting onboard filter profile: %s", selected_profile.c_str());
+			RCLCPP_INFO(get_logger(), "Selecting onboard filter profile: %s.", selected_profile.c_str());
 			if (!m_device->setOnboardFilterProfile(selected_profile))
 			{
-				return handleError("Could not set onboard filter profile");
+				return handleError("Could not set onboard filter profile.");
 			}
 		}
 	}
 
 	const auto current_output_configuration = m_device->outputConfiguration();
 	RCLCPP_INFO(get_logger(), "Currently configured output configuration:");
+        RCLCPP_INFO(get_logger(), " - DATA_TYPE|DATA_FORMAT|FREQUENCY");
 	for (const auto& cfg : current_output_configuration) {
-		const auto output_name = get_xs_data_identifier_name(cfg.m_dataIdentifier);
-		RCLCPP_INFO(get_logger(), " - %s = %d", output_name.c_str(), cfg.m_frequency);
+		RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(cfg.m_dataIdentifier).c_str(), get_xs_format_identifier_name(cfg.m_dataIdentifier).c_str(), cfg.m_frequency);
 	}
 
 	std::vector<std::string> output_configuration;
-	if (get_parameter("output_configuration", output_configuration) && !output_configuration.empty())
+	if (get_parameter("output_configuration", output_configuration) && !output_configuration.empty() && !output_configuration.front().empty())
 	{
 		RCLCPP_INFO(get_logger(), "Found output configuration parameter(s):");
+                RCLCPP_INFO(get_logger(), " - DATA_TYPE|DATA_FORMAT|FREQUENCY");
 
 		XsOutputConfigurationArray newConfigArray;
 		for (const auto& cfg : output_configuration)
 		{
-			std::string output_name;
+                        XsDataIdentifier data_identifier;
 			int output_frequency;
-			if (!parseConfigLine(cfg, output_name, output_frequency))
+			if (!parseConfigLine(cfg, data_identifier, output_frequency))
 			{
-				return handleError("Could not parse line" + cfg);
+				return handleError("Could not parse line: '" + cfg + "'.");
 			}
-			RCLCPP_INFO(get_logger(), " - %s = %d", output_name.c_str(), output_frequency);
-
-			XsDataIdentifier data_identifier;
-			if (!get_xs_data_identifier_by_name(output_name, data_identifier))
-			{
-				return handleError("Invalid data identifier: " + output_name);
-			}
+			RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(data_identifier).c_str(),
+                                    get_xs_format_identifier_name(data_identifier).c_str(), output_frequency);
 
 			newConfigArray.push_back(XsOutputConfiguration(data_identifier, output_frequency));
 		}
 
 		if (newConfigArray == current_output_configuration)
 		{
-			RCLCPP_INFO(get_logger(), "Output configuration already configured correctly");
+			RCLCPP_INFO(get_logger(), "Matching output configuration already set.");
 		}
 		else
 		{
@@ -414,11 +410,12 @@ bool XdaInterface::prepare()
 {
 	assert(m_device != 0);
 
+        RCLCPP_INFO(get_logger(), "Configuring ...");
 	if (!m_device->gotoConfig())
-		return handleError("Could not go to config");
+		return handleError("Could not go to config.");
 
 	if (!configureDevice())
-		return handleError("Could not not apply the custom device configuration");
+		return handleError("Could not not apply the custom device configuration.");
 
 	// read EMTS and device config stored in .mtb file header.
 	if (!m_device->readEmtsAndDeviceConfiguration())
@@ -505,7 +502,7 @@ void XdaInterface::declareCommonParameters()
 	declare_parameter("baudrate", XsBaud::rateToNumeric(XBR_Invalid));
 
 	declare_parameter<std::string>("onboard_filter_profile", "");
-	declare_parameter<std::vector<std::string>>("output_configuration", std::vector<std::string>());
+	declare_parameter<std::vector<std::string>>("output_configuration", std::vector<std::string>{});
 	declare_parameter("config_baudrate", XsBaud::rateToNumeric(XBR_Invalid));
 	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {1., 0., 0., 0.});
 	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {1., 0., 0., 0.});

@@ -1,12 +1,13 @@
 #include "xdautils.h"
 
+#include <algorithm>
 #include <map>
-#include <iostream>
 #include <sstream>
 
-std::string get_xs_data_identifier_name(XsDataIdentifier identifier)
+std::string get_xs_data_identifier_name(const XsDataIdentifier& identifier)
 {
-    switch (identifier) {
+    const XsDataIdentifier masked_identifier = identifier & XDI_FullTypeMask;
+    switch (masked_identifier) {
         case XDI_TemperatureGroup: return "XDI_TemperatureGroup";
         case XDI_Temperature: return "XDI_Temperature";
 
@@ -202,25 +203,79 @@ bool get_xs_data_identifier_by_name(const std::string& name, XsDataIdentifier& i
     }
 }
 
-bool parseConfigLine(const std::string& line, std::string& name, int& value)
+bool get_xs_format_identifier_by_name(const std::string& format_str, XsDataIdentifier& identifier)
 {
-    std::istringstream stream;
-    stream.str(line);
-	int index=0;
-	for (std::string part; std::getline(stream, part, '='); index++) {
-		switch (index)
-		{
-			case 0:
-			   name = part;
-			   break;
-			case 1:
-				value = std::stoi(part);
-				break;
-			default:
-				return false;
-		}
-	}
+    std::string lower_format_str = format_str;
+    std::transform(format_str.begin(), format_str.end(), lower_format_str.begin(), ::tolower);
+    if (lower_format_str == "float")
+    {
+        identifier = XDI_SubFormatFloat;
+        return true;
+    }
+    if (lower_format_str == "fp1220")
+    {
+        identifier = XDI_SubFormatFp1220;
+        return true;
+    }
+    if (lower_format_str == "fp1632")
+    {
+        identifier = XDI_SubFormatFp1632;
+        return true;
+    }
+    if (lower_format_str == "double")
+    {
+        identifier = XDI_SubFormatDouble;
+        return true;
+    }
 
-    return index == 2;
+    return false;
+}
+
+std::string get_xs_format_identifier_name(const XsDataIdentifier& identifier)
+{
+    XsDataIdentifier masked_identifier = identifier & XDI_SubFormatMask;
+    switch (masked_identifier)
+    {
+    case XDI_SubFormatFloat: return "Float";
+    case XDI_SubFormatFp1220: return "Fp1220";
+    case XDI_SubFormatFp1632: return "Fp1632";
+    case XDI_SubFormatDouble: return "Double";
+    default: return "Unknown";
+    }
+}
+
+bool parseConfigLine(const std::string& line, XsDataIdentifier& identifier, int& frequency)
+{
+    std::istringstream stream(line);
+    XsDataIdentifier type = XDI_None, format = XDI_None;
+    bool format_parsing_success = false;
+    int index=0;
+    for (std::string token; std::getline(stream, token, '|') && index <= 3; ++index)
+    {
+        if (get_xs_data_identifier_by_name(token, type))
+          continue;
+        const bool parsing_result = get_xs_format_identifier_by_name(token, format);
+        if (parsing_result)
+          {
+            format_parsing_success = parsing_result;
+            continue;
+          }
+        try
+        {
+          std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+          frequency = std::stoi(token, nullptr, (token.find("0x") != std::string::npos) ? 16 : 10);
+        }
+        catch (std::invalid_argument const& err)
+        {
+          return false;
+        }
+    }
+
+    if ((type != XDI_None) && format_parsing_success)
+        identifier = type | format;
+    else
+        return false;
+
+    return index == 3;
 }
 

@@ -25,26 +25,33 @@ TEST(Xda, test_get_xs_data_identifier_name)
 
 TEST(Xda, test_parse_line)
 {
-    std::string name;
-    int value;
-    auto result = parseConfigLine("XDI_Acceleration=1337", name, value);
-    ASSERT_TRUE(result);
-    ASSERT_EQ(name, "XDI_Acceleration");
-    ASSERT_EQ(value, 1337);
+    XsDataIdentifier identifier;
+    int freq;
+    ASSERT_TRUE(parseConfigLine("XDI_Acceleration|Double|1337", identifier, freq));
+    ASSERT_EQ(identifier & XDI_FullTypeMask, XDI_Acceleration);
+    ASSERT_EQ(identifier & XDI_SubFormatMask, XDI_SubFormatDouble);
+    ASSERT_EQ(freq, 1337);
 }
 
 TEST(Xda, test_parse_line_error)
 {
-    std::string name;
-    int value;
-    auto result = parseConfigLine("XDI_Acceleration", name, value);
-    ASSERT_FALSE(result);
+    XsDataIdentifier identifier;
+    int freq;
+    ASSERT_FALSE(parseConfigLine("XDI_Acceleration|Double", identifier, freq));
+    ASSERT_FALSE(parseConfigLine("XDI_Acceleration", identifier, freq));
 }
 
 TEST(Xda, test_parse_line_error2)
 {
-    std::string name;
-    int value;
-    auto result = parseConfigLine("XDI_Acceleration=13=12", name, value);
-    ASSERT_FALSE(result);
+    XsDataIdentifier identifier;
+    int freq;
+    ASSERT_FALSE(parseConfigLine("XDI_Acceleration|Floatttt|12", identifier, freq));
+    ASSERT_FALSE(parseConfigLine("XDI_Acceleration|Float/12", identifier, freq));
+    ASSERT_FALSE(parseConfigLine("XDI_Acceleration=Float|12", identifier, freq));
+}
+
+int main(int argc, char **argv) {
+    testing::InitGoogleTest(&argc, argv);
+
+    return RUN_ALL_TESTS();
 }

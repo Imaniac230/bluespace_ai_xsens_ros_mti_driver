@@ -4,7 +4,7 @@
         ##  - scan_for devices = 
         ##          true:   the driver ignores port and baudrate settings, scans for devices on all ports and selects the first found
         ##          false: = Requires correct port and baudrate both to be specified
-        scan_for_devices: false
+        scan_for_devices: true
         port: "/dev/ttyUSB0" # port name, e.g. '/dev/ttyUSB0'
         baudrate: 921600 # non-necessary for some devices
 
@@ -50,20 +50,48 @@
         orientation_stddev: [0.0, 0.0, 0.0] # [rad]
         magnetic_field_stddev: [0.0, 0.0, 0.0] # [Tesla]
 
+
         ## Internal device configuration (optional)
         ## These values (if specified) will be applied to the sensor device on startup
+        # Configure a new device baudrate
         config_baudrate: 921600
 
         # Configure the sensor to rotate its output using:
-        alignment_local_quat: [ 1.0, 0.0, 0.0, 0.0 ] # (identity)
-        alignment_sensor_quat: [ 1.0, 0.0, 0.0, 0.0 ] # (identity)
+        alignment_local_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
+        alignment_sensor_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
 
-        # Configure the filter profile - check the log output to see available profiles on your device
-        onboard_filter_profile: "GeneralMag_RTK"
+        # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device
+        onboard_filter_profile: "General_RTK"
 
-        # Configure the device output data
-        # output_configuration:
-        #     - "XDI_PacketCounter=65535"
-        #     - "XDI_SampleTimeFine=65535"
-        #     - "XDI_StatusWord=65535"
-        #     - "XDI_Quaternion=200"
+        # Configure the device output data with DATA_TYPE|DATA_FORMAT|FREQUENCY
+        # You can provide these in any order (ex. DATA_FORMAT|FREQUENCY|DATA_TYPE),
+        #   however all three fields must always be specified.
+        # You can set the first configuration line as an empty string to disable the configuration process.
+        # Valid values are:
+        #   DATA_TYPE -> see manual or MTi GUI application for supported data types
+        #   DATA_FORMAT -> Float (default), Fp1220, Fp1632, Double
+        #   FREQUENCY -> see manual or MTi GUI application for supported frequencies,
+        #       0xFFFF specifies tha maximum available on device
+        # Some data types don't support all data formats or frequencies. If you don't see the configured data output,
+        #   please check the manual or MTi GUI application for valid combinations on your device.
+        output_configuration:
+            - ""
+            - "XDI_Temperature|Float|400"
+            - "XDI_PacketCounter|Float|0xFFFF"
+            - "XDI_GnssAge|Float|400"
+            - "XDI_SampleTimeFine|Float|0xFFFF"
+            - "XDI_Quaternion|Float|400"
+            - "XDI_BaroPressure|Float|100"
+            - "XDI_DeltaV|Float|400"
+            - "XDI_Acceleration|Float|400"
+            - "XDI_FreeAcceleration|Float|400"
+            - "XDI_AltitudeEllipsoid|Float|400"
+            - "XDI_LatLon|Float|400"
+            - "XDI_GnssPvtData|Float|0xFFFF"
+            - "XDI_GnssSatInfo|Float|0xFFFF"
+            - "XDI_GnssPvtPulse|Float|0xFFFF"
+            - "XDI_RateOfTurn|Float|400"
+            - "XDI_DeltaQ|Float|400"
+            - "XDI_MagneticField|Float|100"
+            - "XDI_VelocityXYZ|Float|400"
+            - "XDI_StatusWord|Float|0xFFFF"
