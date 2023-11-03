@@ -63,6 +63,8 @@
         # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device
         onboard_filter_profile: "General_RTK"
 
+        #TODO: add fixedGravity options, gnssLeverArm options, LLA position options?
+
         # Configure the device output data with DATA_TYPE|DATA_FORMAT|FREQUENCY
         # You can provide these in any order (ex. DATA_FORMAT|FREQUENCY|DATA_TYPE),
         #   however all three fields must always be specified.
@@ -96,3 +98,15 @@
             - "XDI_MagneticField|Float|100"
             - "XDI_VelocityXYZ|Float|400"
             - "XDI_StatusWord|Float|400"
+
+        # Configure the device option flags.
+        # This will always set only the specified flags and unset all others.
+        # To disable modification and keep the currently applied flags, set the first configuration line as an empty string.
+        # Not all devices can support all flags, please see the documentation or MTi GUI application for supported flags on your device.
+        option_flags:
+            - ""
+#            - "XDOF_None"
+            - "XDOF_EnableOrientationSmoother"
+            - "XDOF_EnableInrunCompassCalibration"
+            - "XDOF_EnablePositionVelocitySmoother"
+            - "XDOF_EnableContinuousZRU"

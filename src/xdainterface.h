@@ -92,7 +92,7 @@ public:
 
 private:
 	void registerCallback(PacketCallback *cb);
-	bool handleError(std::string error);
+	bool handleError(const std::string& error);
 	void declareCommonParameters();
 	bool configureDevice();
 

@@ -319,16 +319,15 @@ bool XdaInterface::configureDevice()
 		{
 			RCLCPP_INFO(get_logger(), "Selecting onboard filter profile: %s.", selected_profile.c_str());
 			if (!m_device->setOnboardFilterProfile(selected_profile))
-			{
 				return handleError("Could not set onboard filter profile.");
-			}
 		}
 	}
 
 	const auto current_output_configuration = m_device->outputConfiguration();
 	RCLCPP_INFO(get_logger(), "Currently configured output configuration:");
         RCLCPP_INFO(get_logger(), " - DATA_TYPE|DATA_FORMAT|FREQUENCY");
-	for (const auto& cfg : current_output_configuration) {
+	for (const auto& cfg : current_output_configuration)
+        {
 		RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(cfg.m_dataIdentifier).c_str(), get_xs_format_identifier_name(cfg.m_dataIdentifier).c_str(), cfg.m_frequency);
 	}
 
@@ -345,9 +344,7 @@ bool XdaInterface::configureDevice()
                         XsDataIdentifier data_identifier;
 			int output_frequency;
 			if (!parseConfigLine(cfg, data_identifier, output_frequency))
-			{
 				return handleError("Could not parse line: '" + cfg + "'.");
-			}
 
                         // Check if the data type supports the specified frequency
                         const std::vector<int> supported_rates = m_device->supportedUpdateRates(data_identifier);
@@ -357,7 +354,9 @@ bool XdaInterface::configureDevice()
                                 oss << "Unsupported frequency for '" << get_xs_data_identifier_name(data_identifier) <<
                                     "', valid values are: ";
                                 for (const auto& rate : supported_rates)
+                                {
                                         oss << rate << ((rate == supported_rates.back()) ? "." : ", ");
+                                }
                                 return handleError(oss.str());
                         }
 
@@ -373,11 +372,9 @@ bool XdaInterface::configureDevice()
 		}
 		else
 		{
-			RCLCPP_INFO(get_logger(), "Setting output configuration");
+			RCLCPP_INFO(get_logger(), "Setting output configuration.");
 			if (!m_device->setOutputConfiguration(newConfigArray))
-			{
-				return handleError("Could not set output configuration");
-			}
+				return handleError("Could not set output configuration.");
 
                         // Check if the configured data output values were actually enabled
                         //TODO(unsupported-format): some data types (such as XDI_SampleTimeFine) will only actually output if the subformat is
@@ -428,6 +425,39 @@ bool XdaInterface::configureDevice()
 		return handleError("Could not set the local rotation matrix.");
 	if (!configureAlignmentQuat("sensor"))
 		return handleError("Could not set the sensor rotation matrix.");
+
+        const auto current_option_flags = m_device->deviceOptionFlags();
+        RCLCPP_INFO(get_logger(), "Currently enabled option flags:\n%s", get_xs_all_enabled_flags(current_option_flags).c_str());
+
+        std::vector<std::string> option_flags;
+        if (get_parameter("option_flags", option_flags) && !option_flags.empty() && !option_flags.front().empty())
+        {
+                RCLCPP_INFO(get_logger(), "Found option flag(s):");
+
+                XsDeviceOptionFlag new_flags = XDOF_None;
+                for (const auto& flag_str : option_flags)
+                {
+                        XsDeviceOptionFlag flag = XDOF_None;
+                        if (!get_xs_enabled_flag_by_name(flag_str, flag))
+                                return handleError("Invalid option flag '" + flag_str + "'.");
+
+                        RCLCPP_INFO(get_logger(), " - %s", flag_str.c_str());
+
+                        new_flags = new_flags | flag;
+                }
+
+                if (new_flags == current_option_flags)
+                {
+                        RCLCPP_INFO(get_logger(), "Matching option flags already set.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting option flags.");
+                        m_device->setDeviceOptionFlags(XDOF_None, XDOF_All);
+                        if (!m_device->setDeviceOptionFlags(new_flags, XDOF_None))
+                                return handleError("Could not set option flags, some flags might not be supported by the device.");
+                }
+        }
 
 	return true;
 }
@@ -489,7 +519,7 @@ void XdaInterface::registerCallback(PacketCallback *cb)
 	m_callbacks.push_back(cb);
 }
 
-bool XdaInterface::handleError(std::string error)
+bool XdaInterface::handleError(const std::string& error)
 {
 	RCLCPP_ERROR(get_logger(), "%s", error.c_str());
 	return false;
@@ -532,6 +562,7 @@ void XdaInterface::declareCommonParameters()
 	declare_parameter("config_baudrate", XsBaud::rateToNumeric(XBR_Invalid));
 	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {1., 0., 0., 0.});
 	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {1., 0., 0., 0.});
+        declare_parameter<std::vector<std::string>>("option_flags", std::vector<std::string>{});
 
 	declare_parameter("enable_logging", false);
 	declare_parameter("log_file", "log.mtb");

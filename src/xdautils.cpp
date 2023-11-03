@@ -1,7 +1,6 @@
 #include "xdautils.h"
 
 #include <algorithm>
-#include <map>
 #include <sstream>
 
 std::string get_xs_data_identifier_name(const XsDataIdentifier& identifier)
@@ -95,6 +94,7 @@ std::string get_xs_data_identifier_name(const XsDataIdentifier& identifier)
         case XDI_Rssi: return "XDI_Rssi";
         case XDI_DeviceId: return "XDI_DeviceId";
         case XDI_LocationId: return "XDI_LocationId";
+
         default: return "Unknown";
     }
 }
@@ -102,7 +102,6 @@ std::string get_xs_data_identifier_name(const XsDataIdentifier& identifier)
 bool get_xs_data_identifier_by_name(const std::string& name, XsDataIdentifier& identifier)
 {
     std::map<std::string, XsDataIdentifier> name_mapping;
-
     name_mapping["XDI_TemperatureGroup"] = XDI_TemperatureGroup;
     name_mapping["XDI_Temperature"] = XDI_Temperature;
 
@@ -191,44 +190,21 @@ bool get_xs_data_identifier_by_name(const std::string& name, XsDataIdentifier& i
     name_mapping["XDI_DeviceId"] = XDI_DeviceId;
     name_mapping["XDI_LocationId"] = XDI_LocationId;
 
-    auto value = name_mapping.find(name);
-    if (value != name_mapping.end())
-    {
-        identifier = value->second;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    return get_xs_value(name, name_mapping, identifier);
 }
 
 bool get_xs_format_identifier_by_name(const std::string& format_str, XsDataIdentifier& identifier)
 {
     std::string lower_format_str = format_str;
     std::transform(format_str.begin(), format_str.end(), lower_format_str.begin(), ::tolower);
-    if (lower_format_str == "float")
-    {
-        identifier = XDI_SubFormatFloat;
-        return true;
-    }
-    if (lower_format_str == "fp1220")
-    {
-        identifier = XDI_SubFormatFp1220;
-        return true;
-    }
-    if (lower_format_str == "fp1632")
-    {
-        identifier = XDI_SubFormatFp1632;
-        return true;
-    }
-    if (lower_format_str == "double")
-    {
-        identifier = XDI_SubFormatDouble;
-        return true;
-    }
 
-    return false;
+    std::map<std::string, XsDataIdentifier> format_mapping;
+    format_mapping["float"] = XDI_SubFormatFloat;
+    format_mapping["fp1220"] = XDI_SubFormatFp1220;
+    format_mapping["fp1632"] = XDI_SubFormatFp1632;
+    format_mapping["double"] = XDI_SubFormatDouble;
+
+    return get_xs_value(lower_format_str, format_mapping, identifier);
 }
 
 std::string get_xs_format_identifier_name(const XsDataIdentifier& identifier)
@@ -240,8 +216,81 @@ std::string get_xs_format_identifier_name(const XsDataIdentifier& identifier)
     case XDI_SubFormatFp1220: return "Fp1220";
     case XDI_SubFormatFp1632: return "Fp1632";
     case XDI_SubFormatDouble: return "Double";
+
     default: return "Unknown";
     }
+}
+
+bool get_xs_enabled_flag_by_name(const std::string& name, XsDeviceOptionFlag& option_flag)
+{
+    std::map<std::string, XsDeviceOptionFlag> flag_mapping;
+    flag_mapping["XDOF_DisableAutoStore"] = XDOF_DisableAutoStore;
+    flag_mapping["XDOF_DisableAutoMeasurement"] = XDOF_DisableAutoMeasurement;
+    flag_mapping["XDOF_EnableBeidou"] = XDOF_EnableBeidou;
+    flag_mapping["XDOF_DisableGps"] = XDOF_DisableGps;
+    flag_mapping["XDOF_EnableAhs"] = XDOF_EnableAhs;
+    flag_mapping["XDOF_EnableOrientationSmoother"] = XDOF_EnableOrientationSmoother;
+    flag_mapping["XDOF_EnableConfigurableBusId"] = XDOF_EnableConfigurableBusId;
+    flag_mapping["XDOF_EnableInrunCompassCalibration"] = XDOF_EnableInrunCompassCalibration;
+    flag_mapping["XDOF_DisableSleepMode"] = XDOF_DisableSleepMode;
+    flag_mapping["XDOF_EnableConfigMessageAtStartup"] = XDOF_EnableConfigMessageAtStartup;
+    flag_mapping["XDOF_EnableColdFilterResets"] = XDOF_EnableColdFilterResets;
+    flag_mapping["XDOF_EnablePositionVelocitySmoother"] = XDOF_EnablePositionVelocitySmoother;
+    flag_mapping["XDOF_EnableContinuousZRU"] = XDOF_EnableContinuousZRU;
+
+    flag_mapping["XDOF_None"] = XDOF_None;
+    flag_mapping["XDOF_All"] = XDOF_All;
+
+    return get_xs_value(name, flag_mapping, option_flag);
+}
+
+std::string get_xs_all_enabled_flags(const XsDeviceOptionFlag& option_flag)
+{
+    std::ostringstream oss;
+
+    if (option_flag == XDOF_All)
+    {
+      oss << " - XDOF_All" << std::endl;
+      return oss.str();
+    }
+
+    if (option_flag == XDOF_None)
+    {
+      oss << " - XDOF_None" << std::endl;
+      return oss.str();
+    }
+
+    if (option_flag & XDOF_DisableAutoStore)
+      oss << " - XDOF_DisableAutoStore" << std::endl;
+    if (option_flag & XDOF_DisableAutoMeasurement)
+      oss << " - XDOF_DisableAutoMeasurement" << std::endl;
+    if (option_flag & XDOF_EnableBeidou)
+      oss << " - XDOF_EnableBeidou" << std::endl;
+    if (option_flag & XDOF_DisableGps)
+      oss << " - XDOF_DisableGps" << std::endl;
+    if (option_flag & XDOF_EnableAhs)
+      oss << " - XDOF_EnableAhs" << std::endl;
+    if (option_flag & XDOF_EnableOrientationSmoother)
+      oss << " - XDOF_EnableOrientationSmoother" << std::endl;
+    if (option_flag & XDOF_EnableConfigurableBusId)
+      oss << " - XDOF_EnableConfigurableBusId" << std::endl;
+    if (option_flag & XDOF_EnableInrunCompassCalibration)
+      oss << " - XDOF_EnableInrunCompassCalibration" << std::endl;
+    if (option_flag & XDOF_DisableSleepMode)
+      oss << " - XDOF_DisableSleepMode" << std::endl;
+    if (option_flag & XDOF_EnableConfigMessageAtStartup)
+      oss << " - XDOF_EnableConfigMessageAtStartup" << std::endl;
+    if (option_flag & XDOF_EnableColdFilterResets)
+      oss << " - XDOF_EnableColdFilterResets" << std::endl;
+    if (option_flag & XDOF_EnablePositionVelocitySmoother)
+      oss << " - XDOF_EnablePositionVelocitySmoother" << std::endl;
+    if (option_flag & XDOF_EnableContinuousZRU)
+      oss << " - XDOF_EnableContinuousZRU" << std::endl;
+
+    if (oss.str().empty())
+      oss << "Unknown" << std::endl;
+
+    return oss.str();
 }
 
 bool parseConfigLine(const std::string& line, XsDataIdentifier& identifier, int& frequency)
