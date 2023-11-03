@@ -341,12 +341,26 @@ bool XdaInterface::configureDevice()
 		XsOutputConfigurationArray newConfigArray;
 		for (const auto& cfg : output_configuration)
 		{
+                        // Try parsing the config
                         XsDataIdentifier data_identifier;
 			int output_frequency;
 			if (!parseConfigLine(cfg, data_identifier, output_frequency))
 			{
 				return handleError("Could not parse line: '" + cfg + "'.");
 			}
+
+                        // Check if the data type supports the specified frequency
+                        const std::vector<int> supported_rates = m_device->supportedUpdateRates(data_identifier);
+                        if (std::find(supported_rates.begin(), supported_rates.end(), output_frequency) == std::end(supported_rates))
+                        {
+                                std::ostringstream oss;
+                                oss << "Unsupported frequency for '" << get_xs_data_identifier_name(data_identifier) <<
+                                    "', valid values are: ";
+                                for (const auto& rate : supported_rates)
+                                        oss << rate << ((rate == supported_rates.back()) ? "." : ", ");
+                                return handleError(oss.str());
+                        }
+
 			RCLCPP_INFO(get_logger(), " - %s|%s|%d", get_xs_data_identifier_name(data_identifier).c_str(),
                                     get_xs_format_identifier_name(data_identifier).c_str(), output_frequency);
 
@@ -364,6 +378,18 @@ bool XdaInterface::configureDevice()
 			{
 				return handleError("Could not set output configuration");
 			}
+
+                        // Check if the configured data output values were actually enabled
+                        //TODO(unsupported-format): some data types (such as XDI_SampleTimeFine) will only actually output if the subformat is
+                        //  0 (XDI_SubFormatFloat). The config will, however, still report the value as being normally enabled.
+                        //  Find a way to catch this error.
+//                        for (const auto& config : newConfigArray)
+//                        {
+//                                if (!m_device->hasDataEnabled(config.m_dataIdentifier))
+//                                        return handleError("Could not enable dat output for " +
+//                                                           get_xs_data_identifier_name(config.m_dataIdentifier) +
+//                                                           ". Try setting a different DATA_FORMAT.");
+//                        }
 		}
 	}
 
@@ -375,23 +401,23 @@ bool XdaInterface::configureDevice()
 		std::vector<XsReal> alignment_quat;
 		if (get_parameter(parameterName, alignment_quat) && !alignment_quat.empty())
 		{
-			RCLCPP_INFO(get_logger(), "Configuration alignment rotation for %s", parameterName);
+			RCLCPP_INFO(get_logger(), "Configuration alignment rotation for %s.", parameterName);
 			const auto currentAlignmentQuat = m_device->alignmentRotationQuaternion(frame);
-			RCLCPP_INFO(get_logger(), " - current alignment quaternion for %s (%d): [%f %f %f %f]",
+			RCLCPP_INFO(get_logger(), " - current alignment quaternion for %s (%d): [%f %f %f %f].",
 				parameterName, frame, currentAlignmentQuat.w(), currentAlignmentQuat.x(),
 				currentAlignmentQuat.y(), currentAlignmentQuat.z());
 
 			const auto paramAlignmentQuat = XsQuaternion{alignment_quat[0], alignment_quat[1], alignment_quat[2], alignment_quat[3]};
 			if (!paramAlignmentQuat.isEqual(currentAlignmentQuat, 0.01))
 			{
-				RCLCPP_INFO(get_logger(), " - desired alignment quaternion for %s (%d): [%f %f %f %f]", parameterName, frame,
+				RCLCPP_INFO(get_logger(), " - desired alignment quaternion for %s (%d): [%f %f %f %f].", parameterName, frame,
 					paramAlignmentQuat.w(), paramAlignmentQuat.x(), paramAlignmentQuat.y(), paramAlignmentQuat.z());
 				if (!m_device->setAlignmentRotationQuaternion(frame, paramAlignmentQuat))
-					return handleError("Could not configure alignment quaternion");
+					return handleError("Could not configure alignment quaternion.");
 			}
 			else
 			{
-				RCLCPP_INFO(get_logger(), " - actual and desired are near each other, no action taken");
+				RCLCPP_INFO(get_logger(), " - actual and desired are near each other, no action taken.");
 			}
 		}
 
@@ -399,9 +425,9 @@ bool XdaInterface::configureDevice()
 	};
 
 	if (!configureAlignmentQuat("local"))
-		return handleError("Could not set the local rotation matrix");
+		return handleError("Could not set the local rotation matrix.");
 	if (!configureAlignmentQuat("sensor"))
-		return handleError("Could not set the sensor rotation matrix");
+		return handleError("Could not set the sensor rotation matrix.");
 
 	return true;
 }

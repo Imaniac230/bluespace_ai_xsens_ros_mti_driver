@@ -66,19 +66,20 @@
         # Configure the device output data with DATA_TYPE|DATA_FORMAT|FREQUENCY
         # You can provide these in any order (ex. DATA_FORMAT|FREQUENCY|DATA_TYPE),
         #   however all three fields must always be specified.
-        # You can set the first configuration line as an empty string to disable the configuration process.
+        # To disable config modification and keep the currently applied settings, set the first configuration line as an empty string.
         # Valid values are:
         #   DATA_TYPE -> see manual or MTi GUI application for supported data types
         #   DATA_FORMAT -> Float (default), Fp1220, Fp1632, Double
         #   FREQUENCY -> see manual or MTi GUI application for supported frequencies,
-        #       0xFFFF specifies tha maximum available on device
-        # Some data types don't support all data formats or frequencies. If you don't see the configured data output,
-        #   please check the manual or MTi GUI application for valid combinations on your device.
+        #       0xFFFF (or 65535) specifies tha maximum available on device
+        # Some data types don't support different formats, in which case the default 'Float' option must be set.
+        # If you don't see your configured data output, try setting the type to Float and
+        #   check the manual or MTi GUI application for valid combinations on your device.
         output_configuration:
             - ""
             - "XDI_Temperature|Float|400"
             - "XDI_PacketCounter|Float|0xFFFF"
-            - "XDI_GnssAge|Float|400"
+            - "XDI_GnssAge|Float|0xFFFF"
             - "XDI_SampleTimeFine|Float|0xFFFF"
             - "XDI_Quaternion|Float|400"
             - "XDI_BaroPressure|Float|100"
@@ -87,11 +88,11 @@
             - "XDI_FreeAcceleration|Float|400"
             - "XDI_AltitudeEllipsoid|Float|400"
             - "XDI_LatLon|Float|400"
-            - "XDI_GnssPvtData|Float|0xFFFF"
-            - "XDI_GnssSatInfo|Float|0xFFFF"
-            - "XDI_GnssPvtPulse|Float|0xFFFF"
+            - "XDI_GnssPvtData|Float|4"
+            - "XDI_GnssSatInfo|Float|4"
+            - "XDI_GnssPvtPulse|Float|4"
             - "XDI_RateOfTurn|Float|400"
             - "XDI_DeltaQ|Float|400"
             - "XDI_MagneticField|Float|100"
             - "XDI_VelocityXYZ|Float|400"
-            - "XDI_StatusWord|Float|0xFFFF"
+            - "XDI_StatusWord|Float|400"
