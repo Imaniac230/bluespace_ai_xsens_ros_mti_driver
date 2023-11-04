@@ -250,45 +250,45 @@ std::string get_xs_all_enabled_flags(const XsDeviceOptionFlag& option_flag)
 
     if (option_flag == XDOF_All)
     {
-      oss << " - XDOF_All" << std::endl;
+      oss << "\n - XDOF_All";
       return oss.str();
     }
 
     if (option_flag == XDOF_None)
     {
-      oss << " - XDOF_None" << std::endl;
+      oss << "\n - XDOF_None";
       return oss.str();
     }
 
     if (option_flag & XDOF_DisableAutoStore)
-      oss << " - XDOF_DisableAutoStore" << std::endl;
+      oss << "\n - XDOF_DisableAutoStore";
     if (option_flag & XDOF_DisableAutoMeasurement)
-      oss << " - XDOF_DisableAutoMeasurement" << std::endl;
+      oss << "\n - XDOF_DisableAutoMeasurement";
     if (option_flag & XDOF_EnableBeidou)
-      oss << " - XDOF_EnableBeidou" << std::endl;
+      oss << "\n - XDOF_EnableBeidou";
     if (option_flag & XDOF_DisableGps)
-      oss << " - XDOF_DisableGps" << std::endl;
+      oss << "\n - XDOF_DisableGps";
     if (option_flag & XDOF_EnableAhs)
-      oss << " - XDOF_EnableAhs" << std::endl;
+      oss << "\n - XDOF_EnableAhs";
     if (option_flag & XDOF_EnableOrientationSmoother)
-      oss << " - XDOF_EnableOrientationSmoother" << std::endl;
+      oss << "\n - XDOF_EnableOrientationSmoother";
     if (option_flag & XDOF_EnableConfigurableBusId)
-      oss << " - XDOF_EnableConfigurableBusId" << std::endl;
+      oss << "\n - XDOF_EnableConfigurableBusId";
     if (option_flag & XDOF_EnableInrunCompassCalibration)
-      oss << " - XDOF_EnableInrunCompassCalibration" << std::endl;
+      oss << "\n - XDOF_EnableInrunCompassCalibration";
     if (option_flag & XDOF_DisableSleepMode)
-      oss << " - XDOF_DisableSleepMode" << std::endl;
+      oss << "\n - XDOF_DisableSleepMode";
     if (option_flag & XDOF_EnableConfigMessageAtStartup)
-      oss << " - XDOF_EnableConfigMessageAtStartup" << std::endl;
+      oss << "\n - XDOF_EnableConfigMessageAtStartup";
     if (option_flag & XDOF_EnableColdFilterResets)
-      oss << " - XDOF_EnableColdFilterResets" << std::endl;
+      oss << "\n - XDOF_EnableColdFilterResets";
     if (option_flag & XDOF_EnablePositionVelocitySmoother)
-      oss << " - XDOF_EnablePositionVelocitySmoother" << std::endl;
+      oss << "\n - XDOF_EnablePositionVelocitySmoother";
     if (option_flag & XDOF_EnableContinuousZRU)
-      oss << " - XDOF_EnableContinuousZRU" << std::endl;
+      oss << "\n - XDOF_EnableContinuousZRU";
 
     if (oss.str().empty())
-      oss << "Unknown" << std::endl;
+      oss << "\nUnknown";
 
     return oss.str();
 }

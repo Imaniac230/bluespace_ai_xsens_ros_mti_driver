@@ -427,7 +427,7 @@ bool XdaInterface::configureDevice()
 		return handleError("Could not set the sensor rotation matrix.");
 
         const auto current_option_flags = m_device->deviceOptionFlags();
-        RCLCPP_INFO(get_logger(), "Currently enabled option flags:\n%s", get_xs_all_enabled_flags(current_option_flags).c_str());
+        RCLCPP_INFO(get_logger(), "Currently enabled option flags:%s", get_xs_all_enabled_flags(current_option_flags).c_str());
 
         std::vector<std::string> option_flags;
         if (get_parameter("option_flags", option_flags) && !option_flags.empty() && !option_flags.front().empty())

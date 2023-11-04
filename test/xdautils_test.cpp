@@ -58,16 +58,16 @@ TEST(Xda, test_get_xs_enabled_flag_by_name_non_existing)
 
 TEST(Xda, test_get_xs_all_enabled_flags)
 {
-    std::string enabled_str = " - XDOF_DisableGps\n - XDOF_EnableOrientationSmoother\n - XDOF_EnableContinuousZRU\n";
+    std::string enabled_str = "\n - XDOF_DisableGps\n - XDOF_EnableOrientationSmoother\n - XDOF_EnableContinuousZRU";
     ASSERT_EQ(get_xs_all_enabled_flags(XDOF_EnableContinuousZRU | XDOF_DisableGps | XDOF_EnableOrientationSmoother), enabled_str);
 
-    enabled_str = " - XDOF_None\n";
+    enabled_str = "\n - XDOF_None";
     ASSERT_EQ(get_xs_all_enabled_flags(XDOF_None), enabled_str);
 
-    enabled_str = " - XDOF_All\n";
+    enabled_str = "\n - XDOF_All";
     ASSERT_EQ(get_xs_all_enabled_flags(XDOF_All), enabled_str);
 
-    enabled_str = "Unknown\n";
+    enabled_str = "\nUnknown";
     ASSERT_EQ(get_xs_all_enabled_flags(static_cast<XsDeviceOptionFlag>(0xF0000000)), enabled_str);
 }
 
