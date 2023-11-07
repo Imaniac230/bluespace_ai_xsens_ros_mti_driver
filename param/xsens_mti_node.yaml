@@ -61,19 +61,29 @@
         alignment_sensor_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
 
         # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device
-        onboard_filter_profile: "General_RTK"
+        onboard_filter_profile: "GeneralMag_RTK"
+
+        reset_heading: false
+        reset_inclination: false
+
+        # Configure the GNSS platform setting.
+        # See the device manual or MTi GUI application for supported settings on your device.
+        # For all API available data identifiers see the `xsgnssplatform.h` file.
+        gnss_platform: "Portable"
 
         #TODO: add fixedGravity options, gnssLeverArm options, LLA position options?
+        #TODO: publish rssi to a ros topic?
 
         # Configure the device output data with DATA_TYPE|DATA_FORMAT|FREQUENCY
         # You can provide these in any order (ex. DATA_FORMAT|FREQUENCY|DATA_TYPE),
         #   however all three fields must always be specified.
         # To disable config modification and keep the currently applied settings, set the first configuration line as an empty string.
         # Valid values are:
-        #   DATA_TYPE -> see manual or MTi GUI application for supported data types
+        #   DATA_TYPE -> see the device manual or MTi GUI application for supported data types on your device
         #   DATA_FORMAT -> Float (default), Fp1220, Fp1632, Double
-        #   FREQUENCY -> see manual or MTi GUI application for supported frequencies,
-        #       0xFFFF (or 65535) specifies tha maximum available on device
+        #   FREQUENCY -> see the device manual or MTi GUI application for supported frequencies on your device,
+        #       0xFFFF (or 65535) specifies the maximum available on device
+        # For all API available data identifiers see the `xsdataidentifier.h` file.
         # Some data types don't support different formats, in which case the default 'Float' option must be set.
         # If you don't see your configured data output, try setting the type to Float and
         #   check the manual or MTi GUI application for valid combinations on your device.
@@ -102,7 +112,8 @@
         # Configure the device option flags.
         # This will always set only the specified flags and unset all others.
         # To disable modification and keep the currently applied flags, set the first configuration line as an empty string.
-        # Not all devices can support all flags, please see the documentation or MTi GUI application for supported flags on your device.
+        # For all API available flags see the `xsdeviceoptionflag.h` file.
+        # Not all devices can support all flags, please see the device manual or MTi GUI application for supported flags on your device.
         option_flags:
             - ""
 #            - "XDOF_None"

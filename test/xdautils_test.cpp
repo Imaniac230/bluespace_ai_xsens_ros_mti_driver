@@ -71,6 +71,28 @@ TEST(Xda, test_get_xs_all_enabled_flags)
     ASSERT_EQ(get_xs_all_enabled_flags(static_cast<XsDeviceOptionFlag>(0xF0000000)), enabled_str);
 }
 
+TEST(Xda, test_get_xs_gnss_platform_by_name)
+{
+    XsGnssPlatform platform;
+    ASSERT_TRUE(get_xs_gnss_platform_by_name("Automotive", platform));
+    ASSERT_EQ(platform, XGP_Automotive);
+
+    ASSERT_TRUE(get_xs_gnss_platform_by_name("auToMotive", platform));
+    ASSERT_EQ(platform, XGP_Automotive);
+}
+
+TEST(Xda, test_get_xs_gnss_platform_by_name_non_existing)
+{
+    XsGnssPlatform platform;
+    ASSERT_FALSE(get_xs_gnss_platform_by_name("Automotiveee2", platform));
+}
+
+TEST(Xda, test_get_xs_gnss_platform_name)
+{
+    ASSERT_EQ(get_xs_gnss_platform_name(XGP_Automotive), "Automotive");
+    ASSERT_EQ(get_xs_gnss_platform_name(static_cast<XsGnssPlatform>(0xFFFF)), "Unknown");
+}
+
 TEST(Xda, test_parse_line)
 {
     XsDataIdentifier identifier;

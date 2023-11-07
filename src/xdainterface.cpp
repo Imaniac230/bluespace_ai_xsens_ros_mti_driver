@@ -266,7 +266,8 @@ bool XdaInterface::connectDevice()
 	m_device = m_control->device(mtPort.deviceId());
 	assert(m_device != 0);
 
-	RCLCPP_INFO(get_logger(), "Device: %s, with ID: %s, using firmware: '%s' was opened.", m_device->productCode().toStdString().c_str(), m_device->deviceId().toString().c_str(), m_device->firmwareVersion().toString().c_str());
+	RCLCPP_INFO(get_logger(), "Device: %s (HW: %s), with ID: %s, using firmware: '%s' was opened.",
+                    m_device->productCode().toStdString().c_str(), m_device->hardwareVersion().toString().c_str(), m_device->deviceId().toString().c_str(), m_device->firmwareVersion().toString().c_str());
 
 	m_device->addCallbackHandler(&m_xdaCallback);
 
@@ -459,6 +460,29 @@ bool XdaInterface::configureDevice()
                 }
         }
 
+        const auto gnss_platform = m_device->gnssPlatform();
+        RCLCPP_INFO(get_logger(), "GNSS platform setting currently in use: %s", get_xs_gnss_platform_name(gnss_platform).c_str());
+
+        std::string selected_gnss_platform;
+        if (get_parameter("gnss_platform", selected_gnss_platform) && !selected_gnss_platform.empty())
+        {
+                RCLCPP_INFO(get_logger(), "Found GNSS platform parameter: %s.", selected_gnss_platform.c_str());
+                XsGnssPlatform new_gnss_platform;
+                if (!get_xs_gnss_platform_by_name(selected_gnss_platform, new_gnss_platform))
+                        return handleError("Invalid GNSS platform: '" + selected_gnss_platform + "'.");
+
+                if (gnss_platform == new_gnss_platform)
+                {
+                        RCLCPP_INFO(get_logger(), "Matching GNSS platform already set.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting GNSS platform: %s.", selected_gnss_platform.c_str());
+                        if (!m_device->setGnssPlatform(new_gnss_platform))
+                                return handleError("Could not set GNSS platform.");
+                }
+        }
+
 	return true;
 }
 
@@ -499,6 +523,29 @@ bool XdaInterface::prepare()
 				return handleError("Could not start recording");
 		}
 	}
+
+        //TODO(orientation-reset): these could be runtime service calls instead
+        bool reset_heading = false, reset_inclination = false;
+        get_parameter("reset_heading", reset_heading);
+        get_parameter("reset_inclination", reset_inclination);
+        if (reset_heading && reset_inclination)
+        {
+                RCLCPP_INFO(get_logger(), "Performing orientation reset for heading and inclination.");
+                if (!m_device->resetOrientation(XsResetMethod::XRM_Alignment))
+                        return handleError("Could not perform orientation reset.");
+        }
+        else if (reset_heading)
+        {
+                RCLCPP_INFO(get_logger(), "Performing orientation reset for heading.");
+                if (!m_device->resetOrientation(XsResetMethod::XRM_Heading))
+                        return handleError("Could not perform orientation reset.");
+        }
+        else if (reset_inclination)
+        {
+                RCLCPP_INFO(get_logger(), "Performing orientation reset for inclination.");
+                if (!m_device->resetOrientation(XsResetMethod::XRM_Inclination))
+                        return handleError("Could not perform orientation reset.");
+        }
 
 	return true;
 }
@@ -563,6 +610,9 @@ void XdaInterface::declareCommonParameters()
 	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {1., 0., 0., 0.});
 	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {1., 0., 0., 0.});
         declare_parameter<std::vector<std::string>>("option_flags", std::vector<std::string>{});
+        declare_parameter("reset_heading", false);
+        declare_parameter("reset_inclination", false);
+        declare_parameter<std::string>("gnss_platform", "");
 
 	declare_parameter("enable_logging", false);
 	declare_parameter("log_file", "log.mtb");

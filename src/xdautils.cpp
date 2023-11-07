@@ -293,6 +293,43 @@ std::string get_xs_all_enabled_flags(const XsDeviceOptionFlag& option_flag)
     return oss.str();
 }
 
+std::string get_xs_gnss_platform_name(const XsGnssPlatform& platform)
+{
+    switch (platform)
+    {
+    case XGP_Portable: return "Portable";
+    case XGP_Stationary: return "Stationary";
+    case XGP_Pedestrian: return "Pedestrian";
+    case XGP_Automotive: return "Automotive";
+    case XGP_AtSea: return "AtSea";
+    case XGP_Airborne1g: return "Airborne1g";
+    case XGP_Airborne2g: return "Airborne2g";
+    case XGP_Airborne4g: return "Airborne4g";
+    case XGP_Wrist:return "Wrist";
+
+    default: return "Unknown";
+    }
+}
+
+bool get_xs_gnss_platform_by_name(const std::string& name, XsGnssPlatform& platform)
+{
+    std::string lower_platform_str = name;
+    std::transform(name.begin(), name.end(), lower_platform_str.begin(), ::tolower);
+
+    std::map<std::string, XsGnssPlatform> platform_mapping;
+    platform_mapping["portable"] = XGP_Portable;
+    platform_mapping["stationary"] = XGP_Stationary;
+    platform_mapping["pedestrian"] = XGP_Pedestrian;
+    platform_mapping["automotive"] = XGP_Automotive;
+    platform_mapping["atsea"] = XGP_AtSea;
+    platform_mapping["airborne1g"] = XGP_Airborne1g;
+    platform_mapping["airborne2g"] = XGP_Airborne2g;
+    platform_mapping["airborne4g"] = XGP_Airborne4g;
+    platform_mapping["wrist"] = XGP_Wrist;
+
+    return get_xs_value(lower_platform_str, platform_mapping, platform);
+}
+
 bool parseConfigLine(const std::string& line, XsDataIdentifier& identifier, int& frequency)
 {
     std::istringstream stream(line);
