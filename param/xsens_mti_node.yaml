@@ -56,6 +56,13 @@
         # Configure a new device baudrate
         config_baudrate: 921600
 
+        # Configure the location ID
+        # Can be used to identify Motion Tracker by a number instead of its Device ID. This can be particularly useful
+        #   when a fixed setup with multiple interchangeable MT’s is used.
+        #TODO(location-id): MTi documentation specifies maximum range of 0-255, however, the driver actually allows
+        #   for setting a 16-bit value (actual range 0-65535).
+        location_id: 0
+
         # Configure the sensor to rotate its output using:
         alignment_local_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
         alignment_sensor_quat: [1.0, 0.0, 0.0, 0.0] # (identity)

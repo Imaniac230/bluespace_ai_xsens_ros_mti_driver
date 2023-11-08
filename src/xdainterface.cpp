@@ -483,6 +483,29 @@ bool XdaInterface::configureDevice()
                 }
         }
 
+        const int current_location_id = m_device->locationId();
+        RCLCPP_INFO(get_logger(), "Currently used location ID: %d", current_location_id);
+
+        int selected_location_id = -1;
+        if (get_parameter("location_id", selected_location_id) && (selected_location_id != -1))
+        {
+                RCLCPP_INFO(get_logger(), "Found location ID parameter: %d.", selected_location_id);
+                if (selected_location_id > UINT16_MAX)
+                        return handleError("Invalid location ID parameter: " + std::to_string(selected_location_id)
+                                           + ", max allowed value is: " + std::to_string(UINT16_MAX) + ".");
+
+                if (current_location_id == selected_location_id)
+                {
+                        RCLCPP_INFO(get_logger(), "Matching location ID already set.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting location ID: %d.", selected_location_id);
+                        if (!m_device->setLocationId(selected_location_id))
+                                return handleError("Could not set location ID.");
+                }
+        }
+
 	return true;
 }
 
@@ -613,6 +636,7 @@ void XdaInterface::declareCommonParameters()
         declare_parameter("reset_heading", false);
         declare_parameter("reset_inclination", false);
         declare_parameter<std::string>("gnss_platform", "");
+        declare_parameter("location_id", -1);
 
 	declare_parameter("enable_logging", false);
 	declare_parameter("log_file", "log.mtb");
