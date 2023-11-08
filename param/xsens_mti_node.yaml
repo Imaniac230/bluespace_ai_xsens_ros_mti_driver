@@ -61,7 +61,7 @@
         alignment_sensor_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
 
         # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device
-        onboard_filter_profile: "GeneralMag_RTK"
+        onboard_filter_profile: "General_RTK"
 
         reset_heading: false
         reset_inclination: false
@@ -89,25 +89,25 @@
         #   check the manual or MTi GUI application for valid combinations on your device.
         output_configuration:
             - ""
-            - "XDI_Temperature|Float|400"
-            - "XDI_PacketCounter|Float|0xFFFF"
-            - "XDI_GnssAge|Float|0xFFFF"
-            - "XDI_SampleTimeFine|Float|0xFFFF"
-            - "XDI_Quaternion|Float|400"
-            - "XDI_BaroPressure|Float|100"
-            - "XDI_DeltaV|Float|400"
-            - "XDI_Acceleration|Float|400"
-            - "XDI_FreeAcceleration|Float|400"
-            - "XDI_AltitudeEllipsoid|Float|400"
-            - "XDI_LatLon|Float|400"
-            - "XDI_GnssPvtData|Float|4"
-            - "XDI_GnssSatInfo|Float|4"
-            - "XDI_GnssPvtPulse|Float|4"
-            - "XDI_RateOfTurn|Float|400"
-            - "XDI_DeltaQ|Float|400"
-            - "XDI_MagneticField|Float|100"
-            - "XDI_VelocityXYZ|Float|400"
-            - "XDI_StatusWord|Float|400"
+            - "Temperature|Float|400"
+            - "PacketCounter|Float|0xFFFF"
+            - "GnssAge|Float|0xFFFF"
+            - "SampleTimeFine|Float|0xFFFF"
+            - "Quaternion|Float|400"
+            - "BaroPressure|Float|100"
+            - "DeltaV|Float|400"
+            - "Acceleration|Float|400"
+            - "FreeAcceleration|Float|400"
+            - "AltitudeEllipsoid|Float|400"
+            - "LatLon|Float|400"
+            - "GnssPvtData|Float|4"
+            - "GnssSatInfo|Float|4"
+            - "GnssPvtPulse|Float|4"
+            - "RateOfTurn|Float|400"
+            - "DeltaQ|Float|400"
+            - "MagneticField|Float|100"
+            - "VelocityXYZ|Float|400"
+            - "StatusWord|Float|400"
 
         # Configure the device option flags.
         # This will always set only the specified flags and unset all others.
@@ -116,8 +116,8 @@
         # Not all devices can support all flags, please see the device manual or MTi GUI application for supported flags on your device.
         option_flags:
             - ""
-#            - "XDOF_None"
-            - "XDOF_EnableOrientationSmoother"
-            - "XDOF_EnableInrunCompassCalibration"
-            - "XDOF_EnablePositionVelocitySmoother"
-            - "XDOF_EnableContinuousZRU"
+#            - "None"
+            - "EnableOrientationSmoother"
+            - "EnableInrunCompassCalibration"
+            - "EnablePositionVelocitySmoother"
+            - "EnableContinuousZRU"
