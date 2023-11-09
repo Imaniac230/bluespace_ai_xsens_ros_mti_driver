@@ -56,8 +56,6 @@
         # Configure a new device baudrate
         config_baudrate: 921600
 
-        #TODO: publish rssi to a ros topic?
-
         reset_heading: false
         reset_inclination: false
 
@@ -70,7 +68,7 @@
 
         # Apply the host machine current UTC time to the device.
         # This can be set manually here or acquired from GNSS if supported.
-#        apply_current_utc_time: true
+        apply_current_utc_time: true
 
         # Configure the sensor to rotate its output using:
         alignment_local_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
@@ -83,8 +81,7 @@
 
         # Configure the initial LLA position for local magnetic declination and gravity estimation.
         # This can be set manually here or acquired from GNSS if supported.
-#        initial_position_lla: [49.2289, 16.5732, 287.93]
-#        initial_position_lla: [1.555, 58.666, 100.2]
+        initial_position_lla: [49.2289, 16.5732, 287.93]
 
         # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device.
         onboard_filter_profile: "General_RTK"
