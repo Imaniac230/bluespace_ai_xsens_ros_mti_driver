@@ -56,6 +56,11 @@
         # Configure a new device baudrate
         config_baudrate: 921600
 
+        #TODO: publish rssi to a ros topic?
+
+        reset_heading: false
+        reset_inclination: false
+
         # Configure the location ID
         # Can be used to identify Motion Tracker by a number instead of its Device ID. This can be particularly useful
         #   when a fixed setup with multiple interchangeable MT’s is used.
@@ -63,23 +68,31 @@
         #   for setting a 16-bit value (actual range 0-65535).
         location_id: 0
 
+        # Apply the host machine current UTC time to the device.
+        # This can be set manually here or acquired from GNSS if supported.
+#        apply_current_utc_time: true
+
         # Configure the sensor to rotate its output using:
         alignment_local_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
         alignment_sensor_quat: [1.0, 0.0, 0.0, 0.0] # (identity)
 
-        # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device
-        onboard_filter_profile: "General_RTK"
+        # Configure the GNSS Lever arm. This is the length/position of the antenna with respect to the center of the sensor.
+        # It is a 3-vector: x,y,z. Units are in meters.
+        # Check the device manual or MTi GUI application to see if this is supported on your device.
+        gnss_lever_arm: [0.0, 0.0, 0.0]
 
-        reset_heading: false
-        reset_inclination: false
+        # Configure the initial LLA position for local magnetic declination and gravity estimation.
+        # This can be set manually here or acquired from GNSS if supported.
+#        initial_position_lla: [49.2289, 16.5732, 287.93]
+#        initial_position_lla: [1.555, 58.666, 100.2]
+
+        # Configure the filter profile - check the log output or MTi GUI application to see available profiles on your device.
+        onboard_filter_profile: "General_RTK"
 
         # Configure the GNSS platform setting.
         # See the device manual or MTi GUI application for supported settings on your device.
         # For all API available data identifiers see the `xsgnssplatform.h` file.
         gnss_platform: "Portable"
-
-        #TODO: add fixedGravity options, gnssLeverArm options, LLA position options?
-        #TODO: publish rssi to a ros topic?
 
         # Configure the device output data with DATA_TYPE|DATA_FORMAT|FREQUENCY
         # You can provide these in any order (ex. DATA_FORMAT|FREQUENCY|DATA_TYPE),

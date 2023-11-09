@@ -406,16 +406,16 @@ bool XdaInterface::configureDevice()
 				currentAlignmentQuat.y(), currentAlignmentQuat.z());
 
 			const auto paramAlignmentQuat = XsQuaternion{alignment_quat[0], alignment_quat[1], alignment_quat[2], alignment_quat[3]};
-			if (!paramAlignmentQuat.isEqual(currentAlignmentQuat, 0.01))
+			if (paramAlignmentQuat.isEqual(currentAlignmentQuat, 0.01))
 			{
-				RCLCPP_INFO(get_logger(), " - desired alignment quaternion for %s (%d): [%f %f %f %f].", parameterName, frame,
-					paramAlignmentQuat.w(), paramAlignmentQuat.x(), paramAlignmentQuat.y(), paramAlignmentQuat.z());
-				if (!m_device->setAlignmentRotationQuaternion(frame, paramAlignmentQuat))
-					return handleError("Could not configure alignment quaternion.");
+                                RCLCPP_INFO(get_logger(), " - actual and desired are near each other, no action taken.");
 			}
 			else
 			{
-				RCLCPP_INFO(get_logger(), " - actual and desired are near each other, no action taken.");
+                                RCLCPP_INFO(get_logger(), " - desired alignment quaternion for %s (%d): [%f %f %f %f].", parameterName, frame,
+                                            paramAlignmentQuat.w(), paramAlignmentQuat.x(), paramAlignmentQuat.y(), paramAlignmentQuat.z());
+                                if (!m_device->setAlignmentRotationQuaternion(frame, paramAlignmentQuat))
+                                  return handleError("Could not configure alignment quaternion.");
 			}
 		}
 
@@ -486,23 +486,94 @@ bool XdaInterface::configureDevice()
         const int current_location_id = m_device->locationId();
         RCLCPP_INFO(get_logger(), "Currently used location ID: %d", current_location_id);
 
-        int selected_location_id = -1;
-        if (get_parameter("location_id", selected_location_id) && (selected_location_id != -1))
+        int param_location_id = -1;
+        if (get_parameter("location_id", param_location_id) && (param_location_id != -1))
         {
-                RCLCPP_INFO(get_logger(), "Found location ID parameter: %d.", selected_location_id);
-                if (selected_location_id > UINT16_MAX)
-                        return handleError("Invalid location ID parameter: " + std::to_string(selected_location_id)
+                RCLCPP_INFO(get_logger(), "Found location ID parameter: %d.", param_location_id);
+                if (param_location_id > UINT16_MAX)
+                        return handleError("Invalid location ID parameter: " + std::to_string(param_location_id)
                                            + ", max allowed value is: " + std::to_string(UINT16_MAX) + ".");
 
-                if (current_location_id == selected_location_id)
+                if (current_location_id == param_location_id)
                 {
                         RCLCPP_INFO(get_logger(), "Matching location ID already set.");
                 }
                 else
                 {
-                        RCLCPP_INFO(get_logger(), "Setting location ID: %d.", selected_location_id);
-                        if (!m_device->setLocationId(selected_location_id))
+                        RCLCPP_INFO(get_logger(), "Setting location ID: %d.", param_location_id);
+                        if (!m_device->setLocationId(param_location_id))
                                 return handleError("Could not set location ID.");
+                }
+        }
+
+        const XsVector current_position_lla = m_device->initialPositionLLA();
+        RCLCPP_INFO(get_logger(), "Currently used initial LLA position: [%f, %f, %f].",
+                    current_position_lla[0], current_position_lla[1], current_position_lla[2]);
+
+        std::vector<XsReal> param_position_lla{};
+        if (get_parameter("initial_position_lla", param_position_lla) && !param_position_lla.empty())
+        {
+                RCLCPP_INFO(get_logger(), "Found initial LLA position parameter: [%f, %f, %f].",
+                            param_position_lla[0], param_position_lla[1], param_position_lla[2]);
+
+                XsVector desired_position_lla{};
+                desired_position_lla.setSize(3);
+                desired_position_lla[0] = param_position_lla[0];
+                desired_position_lla[1] = param_position_lla[1];
+                desired_position_lla[2] = param_position_lla[2];
+                if (current_position_lla.isEqual(desired_position_lla, 0.01))
+                {
+                        RCLCPP_INFO(get_logger(), "Desired and current are near each other, no action taken.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting initial LLA position: [%f, %f, %f].",
+                                    desired_position_lla[0], desired_position_lla[1], desired_position_lla[2]);
+                        if (!m_device->setInitialPositionLLA(desired_position_lla))
+                                return handleError("Could not set initial LLA position.");
+                }
+        }
+
+        const auto time = m_device->utcTime();
+        RCLCPP_INFO(get_logger(), "Currently set UTC time on device: %d/%d/%d %d:%d:%d (day/month/year hour/minute/second)",
+                    time.m_day, time.m_month, time.m_year, time.m_hour, time.m_minute, time.m_second);
+
+        bool set_utc_time = false;
+        if (get_parameter("apply_current_utc_time", set_utc_time) && set_utc_time)
+        {
+                const auto current_time = XsTimeInfo::currentTime();
+                RCLCPP_INFO(get_logger(), "Applying current host machine UTC time (%d/%d/%d %d:%d:%d (day/month/year hour/minute/second)) to device.",
+                            current_time.m_day, current_time.m_month, current_time.m_year, current_time.m_hour, current_time.m_minute, current_time.m_second);
+                //TODO(time-validity): is this (at least one valid bit) enough?
+                if (!m_device->setUtcTime(current_time) || (current_time.m_valid == 0))
+                        return handleError("Could not apply UTC time to device.");
+        }
+
+        const XsVector current_lever_arm = m_device->gnssLeverArm();
+        RCLCPP_INFO(get_logger(), "Currently configured GNSS Lever arm: [%f, %f, %f].",
+                    current_lever_arm[0], current_lever_arm[1], current_lever_arm[2]);
+
+        std::vector<XsReal> param_lever_arm{};
+        if (get_parameter("gnss_lever_arm", param_lever_arm) && !param_lever_arm.empty())
+        {
+                RCLCPP_INFO(get_logger(), "Found GNSS Lever arm parameter: [%f, %f, %f].",
+                            param_lever_arm[0], param_lever_arm[1], param_lever_arm[2]);
+
+                XsVector desired_lever_arm{};
+                desired_lever_arm.setSize(3);
+                desired_lever_arm[0] = param_lever_arm[0];
+                desired_lever_arm[1] = param_lever_arm[1];
+                desired_lever_arm[2] = param_lever_arm[2];
+                if (current_lever_arm.isEqual(desired_lever_arm, 0.01))
+                {
+                        RCLCPP_INFO(get_logger(), "Desired and current are near each other, no action taken.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting GNSS Lever arm: [%f, %f, %f].",
+                                    desired_lever_arm[0], desired_lever_arm[1], desired_lever_arm[2]);
+                        if (!m_device->setGnssLeverArm(desired_lever_arm))
+                                return handleError("Could not set GNSS Lever arm.");
                 }
         }
 
@@ -628,15 +699,18 @@ void XdaInterface::declareCommonParameters()
 	declare_parameter("baudrate", XsBaud::rateToNumeric(XBR_Invalid));
 
 	declare_parameter<std::string>("onboard_filter_profile", "");
-	declare_parameter<std::vector<std::string>>("output_configuration", std::vector<std::string>{});
+	declare_parameter<std::vector<std::string>>("output_configuration", {});
 	declare_parameter("config_baudrate", XsBaud::rateToNumeric(XBR_Invalid));
-	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {1., 0., 0., 0.});
-	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {1., 0., 0., 0.});
-        declare_parameter<std::vector<std::string>>("option_flags", std::vector<std::string>{});
+	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {});
+	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {});
+        declare_parameter<std::vector<std::string>>("option_flags", {});
         declare_parameter("reset_heading", false);
         declare_parameter("reset_inclination", false);
         declare_parameter<std::string>("gnss_platform", "");
         declare_parameter("location_id", -1);
+        declare_parameter<std::vector<XsReal>>("initial_position_lla", {});
+        declare_parameter("apply_current_utc_time", false);
+        declare_parameter<std::vector<XsReal>>("gnss_lever_arm", {});
 
 	declare_parameter("enable_logging", false);
 	declare_parameter("log_file", "log.mtb");
