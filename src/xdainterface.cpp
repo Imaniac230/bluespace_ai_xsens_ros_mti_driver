@@ -381,13 +381,13 @@ bool XdaInterface::configureDevice()
                         //TODO(unsupported-format): some data types (such as XDI_SampleTimeFine) will only actually output if the subformat is
                         //  0 (XDI_SubFormatFloat). The config will, however, still report the value as being normally enabled.
                         //  Find a way to catch this error.
-//                        for (const auto& config : newConfigArray)
-//                        {
-//                                if (!m_device->hasDataEnabled(config.m_dataIdentifier))
-//                                        return handleError("Could not enable dat output for " +
-//                                                           get_xs_data_identifier_name(config.m_dataIdentifier) +
-//                                                           ". Try setting a different DATA_FORMAT.");
-//                        }
+                        for (const auto& config : newConfigArray)
+                        {
+                                if (!m_device->hasDataEnabled(config.m_dataIdentifier))
+                                        return handleError("Could not enable dat output for " +
+                                                           get_xs_data_identifier_name(config.m_dataIdentifier) +
+                                                           ". Try setting a different DATA_FORMAT.");
+                        }
 		}
 	}
 
