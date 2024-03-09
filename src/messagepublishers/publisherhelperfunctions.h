@@ -38,10 +38,10 @@
 class PublisherHelperFunctions
 {
 public:
-    PublisherHelperFunctions(/* args */);
-    ~PublisherHelperFunctions();
+    PublisherHelperFunctions(/* args */) = default;
+    ~PublisherHelperFunctions() = default;
 
-    void variance_from_stddev_param(std::string param, double *variance_out, rclcpp::Node& node_handle)
+    static void variance_from_stddev_param(const std::string& param, double *variance_out, rclcpp::Node& node_handle)
     {
         std::vector<double> stddev;
         if (node_handle.get_parameter(param, stddev))
@@ -63,14 +63,6 @@ public:
     }
 
 };
-
-PublisherHelperFunctions::PublisherHelperFunctions(/* args */)
-{
-}
-
-PublisherHelperFunctions::~PublisherHelperFunctions()
-{
-}
 
 #endif
 

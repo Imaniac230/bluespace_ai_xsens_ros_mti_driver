@@ -75,7 +75,7 @@ struct PositionLLAPublisher : public PacketCallback
     std::string frame_id = DEFAULT_FRAME_ID;
 
 
-    PositionLLAPublisher(rclcpp::Node &node)
+    explicit PositionLLAPublisher(rclcpp::Node &node)
     {
         int pub_queue_size = 5;
         node.get_parameter("publisher_queue_size", pub_queue_size);
@@ -83,7 +83,7 @@ struct PositionLLAPublisher : public PacketCallback
         node.get_parameter("frame_id", frame_id);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsPositionLLA())
         {

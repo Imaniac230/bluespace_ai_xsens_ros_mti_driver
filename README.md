@@ -27,6 +27,7 @@ This branch was tested to compile and work in ROS 2.0 Humble. Compatibility with
    5. Added an `apply_current_utc_time` parameter to enable setting the current host machine local time to the MTi device on startup.
    6. Added a `gnss_lever_arm` parameter to enable configuring the sensor-relative GNSS antenna position on supported devices.
    7. Added an `initial_position_lla` parameter to enable configuring the initial LLA sensor position if not available from GNSS.
+5. Fixed publisher destruction errors on driver exit - refactored to unique pointers with proper destructor semantics.
 
 ### Issues:
 There appears to be an issue, which may also be related to the [ROS timestamps note](#notes) below. A given ROS publisher output frequency correlates with the number of configured device output data types. For example, setting only temperature device output at 400 Hz:

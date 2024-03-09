@@ -70,12 +70,12 @@
 struct ImuPublisher : public PacketCallback, PublisherHelperFunctions
 {
     rclcpp::Publisher<sensor_msgs::msg::Imu>::SharedPtr pub;
-    double orientation_variance[3];
-    double linear_acceleration_variance[3];
-    double angular_velocity_variance[3];
+    double orientation_variance[3]{};
+    double linear_acceleration_variance[3]{};
+    double angular_velocity_variance[3]{};
     rclcpp::Node& node_handle;
 
-    ImuPublisher(rclcpp::Node &node)
+    explicit ImuPublisher(rclcpp::Node &node)
         : node_handle(node)
     {
         std::vector<double> variance = {0, 0, 0};
@@ -93,7 +93,7 @@ struct ImuPublisher : public PacketCallback, PublisherHelperFunctions
         variance_from_stddev_param("linear_acceleration_stddev", linear_acceleration_variance, node);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         bool quaternion_available = packet.containsOrientation();
         bool gyro_available = packet.containsCalibratedGyroscopeData();

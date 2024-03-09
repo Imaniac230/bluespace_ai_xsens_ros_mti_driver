@@ -70,9 +70,9 @@ struct MagneticFieldPublisher : public PacketCallback, PublisherHelperFunctions
 {
     rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr pub;
     std::string frame_id = DEFAULT_FRAME_ID;
-    double magnetic_field_variance[3];
+    double magnetic_field_variance[3]{};
 
-    MagneticFieldPublisher(rclcpp::Node &node)
+    explicit MagneticFieldPublisher(rclcpp::Node &node)
     {
         std::vector<double> variance = {0, 0, 0};
         node.declare_parameter("magnetic_field_stddev", variance);
@@ -84,7 +84,7 @@ struct MagneticFieldPublisher : public PacketCallback, PublisherHelperFunctions
         variance_from_stddev_param("magnetic_field_stddev", magnetic_field_variance, node);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsCalibratedMagneticField())
         {

@@ -91,7 +91,7 @@ public:
 	const int XS_DEFAULT_BAUDRATE = 115200;
 
 private:
-	void registerCallback(PacketCallback *cb);
+	void registerCallback(std::unique_ptr<PacketCallback> cb);
 	bool handleError(const std::string& error);
 	void declareCommonParameters();
 	bool configureDevice();
@@ -100,7 +100,7 @@ private:
 	XsDevice *m_device;
 	XsPortInfo m_port;
 	XdaCallback m_xdaCallback;
-	std::list<PacketCallback *> m_callbacks;
+	std::list<std::unique_ptr<PacketCallback>> m_callbacks;
 };
 
 #endif

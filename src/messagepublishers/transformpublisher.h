@@ -71,12 +71,12 @@ struct TransformPublisher : public PacketCallback
     tf2_ros::TransformBroadcaster tf_broadcaster;
     std::string frame_id = DEFAULT_FRAME_ID;
 
-    TransformPublisher(rclcpp::Node &node) : tf_broadcaster(node)
+    explicit TransformPublisher(rclcpp::Node &node) : tf_broadcaster(node)
     {
         node.get_parameter("frame_id", frame_id);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsOrientation())
         {

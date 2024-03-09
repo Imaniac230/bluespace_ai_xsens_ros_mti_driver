@@ -70,7 +70,7 @@ struct FreeAccelerationPublisher : public PacketCallback
     rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr pub;
     std::string frame_id = DEFAULT_FRAME_ID;
 
-    FreeAccelerationPublisher(rclcpp::Node &node)
+    explicit FreeAccelerationPublisher(rclcpp::Node &node)
     {
         int pub_queue_size = 5;
         node.get_parameter("publisher_queue_size", pub_queue_size);
@@ -78,7 +78,7 @@ struct FreeAccelerationPublisher : public PacketCallback
         node.get_parameter("frame_id", frame_id);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsFreeAcceleration())
         {

@@ -70,7 +70,7 @@ struct TwistPublisher : public PacketCallback
     rclcpp::Publisher<geometry_msgs::msg::TwistStamped>::SharedPtr pub;
     std::string frame_id = DEFAULT_FRAME_ID;
 
-    TwistPublisher(rclcpp::Node &node)
+    explicit TwistPublisher(rclcpp::Node &node)
     {
         int pub_queue_size = 5;
         node.get_parameter("publisher_queue_size", pub_queue_size);
@@ -78,7 +78,7 @@ struct TwistPublisher : public PacketCallback
         node.get_parameter("frame_id", frame_id);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsVelocity() && packet.containsCalibratedGyroscopeData())
         {

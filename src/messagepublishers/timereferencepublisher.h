@@ -69,14 +69,14 @@ struct TimeReferencePublisher : public PacketCallback
 {
     rclcpp::Publisher<sensor_msgs::msg::TimeReference>::SharedPtr pub;
 
-    TimeReferencePublisher(rclcpp::Node &node)
+    explicit TimeReferencePublisher(rclcpp::Node &node)
     {
         int pub_queue_size = 5;
         node.get_parameter("publisher_queue_size", pub_queue_size);
         pub = node.create_publisher<sensor_msgs::msg::TimeReference>("imu/time_ref", pub_queue_size);
     }
 
-    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp)
+    void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
         if (packet.containsSampleTimeFine())
         {
@@ -94,7 +94,7 @@ struct TimeReferencePublisher : public PacketCallback
                 sec = packet.sampleTimeCoarse();
             }
 
-            rclcpp::Time sample_time(sec, nsec);
+            rclcpp::Time sample_time(static_cast<int32_t>(sec), nsec);
 
             msg.header.stamp = timestamp;
             // msg.header.frame_id = unused

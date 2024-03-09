@@ -125,67 +125,67 @@ void XdaInterface::registerPublishers()
 
 	if (get_parameter("pub_imu", should_publish) && should_publish)
 	{
-		registerCallback(new ImuPublisher(node));
+		registerCallback(std::make_unique<ImuPublisher>(node));
 	}
 	if (get_parameter("pub_quaternion", should_publish) && should_publish)
 	{
-		registerCallback(new OrientationPublisher(node));
+		registerCallback(std::make_unique<OrientationPublisher>(node));
 	}
 	if (get_parameter("pub_acceleration", should_publish) && should_publish)
 	{
-		registerCallback(new AccelerationPublisher(node));
+		registerCallback(std::make_unique<AccelerationPublisher>(node));
 	}
 	if (get_parameter("pub_angular_velocity", should_publish) && should_publish)
 	{
-		registerCallback(new AngularVelocityPublisher(node));
+		registerCallback(std::make_unique<AngularVelocityPublisher>(node));
 	}
 	if (get_parameter("pub_mag", should_publish) && should_publish)
 	{
-		registerCallback(new MagneticFieldPublisher(node));
+		registerCallback(std::make_unique<MagneticFieldPublisher>(node));
 	}
 	if (get_parameter("pub_dq", should_publish) && should_publish)
 	{
-		registerCallback(new OrientationIncrementsPublisher(node));
+		registerCallback(std::make_unique<OrientationIncrementsPublisher>(node));
 	}
 	if (get_parameter("pub_dv", should_publish) && should_publish)
 	{
-		registerCallback(new VelocityIncrementPublisher(node));
+		registerCallback(std::make_unique<VelocityIncrementPublisher>(node));
 	}
 	if (get_parameter("pub_sampletime", should_publish) && should_publish)
 	{
-		registerCallback(new TimeReferencePublisher(node));
+		registerCallback(std::make_unique<TimeReferencePublisher>(node));
 	}
 	if (get_parameter("pub_temperature", should_publish) && should_publish)
 	{
-		registerCallback(new TemperaturePublisher(node));
+		registerCallback(std::make_unique<TemperaturePublisher>(node));
 	}
 	if (get_parameter("pub_pressure", should_publish) && should_publish)
 	{
-		registerCallback(new PressurePublisher(node));
+		registerCallback(std::make_unique<PressurePublisher>(node));
 	}
 	if (get_parameter("pub_gnss", should_publish) && should_publish)
 	{
-		registerCallback(new GnssPublisher(node));
+		registerCallback(std::make_unique<GnssPublisher>(node));
 	}
 	if (get_parameter("pub_twist", should_publish) && should_publish)
 	{
-		registerCallback(new TwistPublisher(node));
+		registerCallback(std::make_unique<TwistPublisher>(node));
 	}
 	if (get_parameter("pub_free_acceleration", should_publish) && should_publish)
 	{
-		registerCallback(new FreeAccelerationPublisher(node));
+		registerCallback(std::make_unique<FreeAccelerationPublisher>(node));
 	}
 	if (get_parameter("pub_transform", should_publish) && should_publish)
 	{
-		registerCallback(new TransformPublisher(node));
+		registerCallback(std::make_unique<TransformPublisher>(node));
 	}
 	if (get_parameter("pub_positionLLA", should_publish) && should_publish)
 	{
-		registerCallback(new PositionLLAPublisher(node));
+		registerCallback(std::make_unique<PositionLLAPublisher>(node));
 	}
 	if (get_parameter("pub_velocity", should_publish) && should_publish)
 	{
-		registerCallback(new VelocityPublisher(node));
+		registerCallback(std::make_unique<VelocityPublisher>(node));
 	}
 }
 
@@ -655,9 +655,9 @@ void XdaInterface::close()
 	m_control->closePort(m_port);
 }
 
-void XdaInterface::registerCallback(PacketCallback *cb)
+void XdaInterface::registerCallback(std::unique_ptr<PacketCallback> cb)
 {
-	m_callbacks.push_back(cb);
+	m_callbacks.push_back(std::move(cb));
 }
 
 bool XdaInterface::handleError(const std::string& error)

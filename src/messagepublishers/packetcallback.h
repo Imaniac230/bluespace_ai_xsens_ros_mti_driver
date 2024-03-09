@@ -70,6 +70,7 @@ const char* DEFAULT_FRAME_ID = "imu_link";
 class PacketCallback
 {
     public:
+        virtual ~PacketCallback() = default;
         virtual void operator()(const XsDataPacket &, rclcpp::Time) = 0;
 };
 
