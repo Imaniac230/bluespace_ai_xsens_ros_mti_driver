@@ -65,14 +65,23 @@
 #include "packetcallback.h"
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
-#define FIX_TYPE_2D_FIX (2)
-#define FIX_TYPE_3D_FIX (3)
-#define FIX_TYPE_GNSS_AND_DEAD_RECKONING (4)
+enum class GnssId : uint8_t
+{
+    Gps = 0,
+    Sbas = 1,
+    Galileo = 2,
+    BeiDou = 3,
+    Imes = 4,
+    Qzss = 5,
+    Glonass = 6,
+};
+
 
 struct GnssPublisher : public PacketCallback
 {
     rclcpp::Publisher<sensor_msgs::msg::NavSatFix>::SharedPtr pub;
     std::string frame_id = DEFAULT_FRAME_ID;
+    uint16_t used_services = 0;
 
     explicit GnssPublisher(rclcpp::Node &node)
     {
@@ -84,6 +93,39 @@ struct GnssPublisher : public PacketCallback
 
     void operator()(const XsDataPacket &packet, rclcpp::Time timestamp) override
     {
+        if (packet.containsRawGnssSatInfo())
+        {
+            const XsRawGnssSatInfo info = packet.rawGnssSatInfo();
+            used_services = 0;
+            for (unsigned i = 0; i < info.m_numSvs; ++i)
+            {
+                if (info.m_satInfos[i].m_flags & XSIF_UsedForNavigation_Used)
+                {
+                    switch (static_cast<GnssId>(info.m_satInfos[i].m_gnssId))
+                    {
+                    case GnssId::Gps:
+                        used_services |=
+                            sensor_msgs::msg::NavSatStatus::SERVICE_GPS;
+                        break;
+                    case GnssId::Glonass:
+                        used_services |=
+                            sensor_msgs::msg::NavSatStatus::SERVICE_GLONASS;
+                        break;
+                    case GnssId::BeiDou:
+                        used_services |=
+                            sensor_msgs::msg::NavSatStatus::SERVICE_COMPASS;
+                        break;
+                    case GnssId::Galileo:
+                        used_services |=
+                            sensor_msgs::msg::NavSatStatus::SERVICE_GALILEO;
+                        break;
+                    default:
+                        break;
+                    }
+                }
+            }
+        }
+
         if (packet.containsRawGnssPvtData())
         {
             sensor_msgs::msg::NavSatFix msg;
@@ -91,7 +133,7 @@ struct GnssPublisher : public PacketCallback
             msg.header.stamp = timestamp;
             msg.header.frame_id = frame_id;
 
-            XsRawGnssPvtData gnss = packet.rawGnssPvtData();
+            const XsRawGnssPvtData gnss = packet.rawGnssPvtData();
 
             msg.latitude = (double)gnss.m_lat * 1e-7;
             msg.longitude = (double)gnss.m_lon * 1e-7;
@@ -104,15 +146,16 @@ struct GnssPublisher : public PacketCallback
 
             switch (gnss.m_fixType)
             {
-            case FIX_TYPE_2D_FIX: // fall through
-            case FIX_TYPE_3D_FIX: // fall through
-            case FIX_TYPE_GNSS_AND_DEAD_RECKONING:
+            case XPDQI_2DFix: // fall through
+            case XPDQI_3DFix: // fall through
+            case XPDQI_GnssAndDeadReck:
                 msg.status.status = sensor_msgs::msg::NavSatStatus::STATUS_FIX;
                 break;
             default:
                 msg.status.status = sensor_msgs::msg::NavSatStatus::STATUS_NO_FIX;
             }
-            msg.status.service = 0; // unknown
+            msg.status.service = used_services;
+            used_services = 0;
 
             pub->publish(msg);
         }
