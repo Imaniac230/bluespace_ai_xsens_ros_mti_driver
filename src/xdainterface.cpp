@@ -87,6 +87,8 @@
 #include "messagepublishers/positionllapublisher.h"
 #include "messagepublishers/velocitypublisher.h"
 
+#include "services/orientationreset.hpp"
+
 XdaInterface::XdaInterface(const std::string &node_name, const rclcpp::NodeOptions &options)
 	: Node(node_name, options)
 	, m_device(nullptr)
@@ -618,7 +620,6 @@ bool XdaInterface::prepare()
 		}
 	}
 
-        //TODO(orientation-reset): these could be runtime service calls instead
         bool reset_heading = false, reset_inclination = false;
         get_parameter("reset_heading", reset_heading);
         get_parameter("reset_inclination", reset_inclination);
@@ -640,6 +641,8 @@ bool XdaInterface::prepare()
                 if (!m_device->resetOrientation(XsResetMethod::XRM_Inclination))
                         return handleError("Could not perform orientation reset.");
         }
+
+        createServices();
 
 	return true;
 }
@@ -714,4 +717,10 @@ void XdaInterface::declareCommonParameters()
 
 	declare_parameter("enable_logging", false);
 	declare_parameter("log_file", "log.mtb");
+}
+
+void XdaInterface::createServices()
+{
+        rclcpp::Node& node = *this;
+        m_services.push_back(std::make_unique<OrientationReset>(node, m_device));
 }

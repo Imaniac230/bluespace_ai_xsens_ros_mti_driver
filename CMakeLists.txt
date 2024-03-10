@@ -16,6 +16,7 @@ find_package(tf2_ros REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
+find_package(std_srvs REQUIRED)
 
 ###########
 ## Build ##
@@ -48,6 +49,7 @@ ament_target_dependencies(xsens_mti_node
   std_msgs
   geometry_msgs
   sensor_msgs
+  std_srvs
 )
 
 target_link_libraries(

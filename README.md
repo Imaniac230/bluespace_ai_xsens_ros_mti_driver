@@ -20,8 +20,7 @@ This branch was tested to compile and work in ROS 2.0 Humble. Compatibility with
 4. Added support for additional device configuration:
    1. Added an `option_flags` parameter to configure the device option flags. For example, to enable the device orientation smoother algorithm add: `EnableOrientationSmoother`.
       > The driver will detect if you're trying to use an option flag unsupported by the device.
-   2. Added parameters to enable orientation resets on startup: `reset_heading` and `reset_inclination`.
-      > NOTE: These are currently only static settings applied on startup, but could be integrated as ROS service calls to enable runtime resets.
+   2. Added parameters and services `reset_heading` and `reset_inclination` to enable orientation resets on startup and during runtime.
    3. Added a `gnss_platform` parameter to set the platform type on a supported device.
    4. Added a `location_id` parameter.
    5. Added an `apply_current_utc_time` parameter to enable setting the current host machine local time to the MTi device on startup.

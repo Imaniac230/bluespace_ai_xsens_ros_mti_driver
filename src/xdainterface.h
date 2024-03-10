@@ -74,6 +74,7 @@ struct XsDevice;
 
 
 class PacketCallback;
+class ServiceHandler;
 
 class XdaInterface : public rclcpp::Node
 {
@@ -95,12 +96,14 @@ private:
 	bool handleError(const std::string& error);
 	void declareCommonParameters();
 	bool configureDevice();
+        void createServices();
 
 	XsControl *m_control;
 	XsDevice *m_device;
 	XsPortInfo m_port;
 	XdaCallback m_xdaCallback;
 	std::list<std::unique_ptr<PacketCallback>> m_callbacks;
+        std::list<std::unique_ptr<ServiceHandler>> m_services;
 };
 
 #endif

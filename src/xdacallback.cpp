@@ -70,9 +70,7 @@ XdaCallback::XdaCallback(rclcpp::Node& node, size_t maxBufferSize)
 {
 }
 
-XdaCallback::~XdaCallback() throw()
-{
-}
+XdaCallback::~XdaCallback() noexcept = default;
 
 // Returns empty packet on timeout
 RosXsDataPacket XdaCallback::next(const std::chrono::milliseconds &timeout)
@@ -99,14 +97,14 @@ void XdaCallback::onLiveDataAvailable(XsDevice *, const XsDataPacket *packet)
 
 	assert(packet != 0);
 
-	// Discard oldest packet if buffer full
+	// Discard the oldest packet if buffer full
 	if (m_buffer.size() == m_maxBufferSize)
 	{
 		m_buffer.pop_front();
 	}
 
 	// Push new packet
-	m_buffer.push_back(RosXsDataPacket(now, *packet));
+	m_buffer.emplace_back(now, *packet);
 
 	// Manual unlocking is done before notifying, to avoid waking up
 	// the waiting thread only to block again
