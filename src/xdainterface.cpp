@@ -89,6 +89,8 @@
 
 #include "services/orientationreset.hpp"
 
+#include "messagepublishers/parsingtestcallback.h"
+
 XdaInterface::XdaInterface(const std::string &node_name, const rclcpp::NodeOptions &options)
 	: Node(node_name, options)
 	, m_device(nullptr)
@@ -189,6 +191,8 @@ void XdaInterface::registerPublishers()
 	{
 		registerCallback(std::make_unique<VelocityPublisher>(node));
 	}
+
+        registerCallback(std::make_unique<ParsingTestCallback>());
 }
 
 bool XdaInterface::connectDevice()
