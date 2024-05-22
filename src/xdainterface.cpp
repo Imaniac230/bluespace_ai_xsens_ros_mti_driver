@@ -579,6 +579,33 @@ bool XdaInterface::configureDevice()
                 }
         }
 
+        XsIntArray port_config = m_device->portConfiguration();
+        const auto current_rtcm_baudcode = static_cast<XsBaudCode>(port_config[2] & 0xFF);
+        RCLCPP_INFO(get_logger(), "Currently configured RTCM input baudrate: %d", XsBaud::rateToNumeric(XsBaud::codeToRate(current_rtcm_baudcode)));
+
+        int rtcm_baudrate = -1;
+        if (get_parameter("rtcm_baudrate", rtcm_baudrate) && (rtcm_baudrate != -1))
+        {
+                RCLCPP_INFO(get_logger(), "Found rtcm_baudrate parameter: %d.", rtcm_baudrate);
+                const XsBaudCode rtcm_baudcode = XsBaud::rateToCode(XsBaud::numericToRate(rtcm_baudrate));
+                if (rtcm_baudcode == XBC_Invalid)
+                        return handleError("Invalid RTCM baudrate: " + std::to_string(rtcm_baudrate));
+
+                if (current_rtcm_baudcode == rtcm_baudcode)
+                {
+                        RCLCPP_INFO(get_logger(), "Matching RTCM input baudrate already set.");
+                }
+                else
+                {
+                        RCLCPP_INFO(get_logger(), "Setting RTCM input baudrate to: %d.", XsBaud::rateToNumeric(XsBaud::codeToRate(rtcm_baudcode)));
+                        port_config[2] = port_config[2] & static_cast<XsIntArray::value_type>(0xFFFFFF00);
+                        port_config[2] = port_config[2] | static_cast<XsIntArray::value_type>(rtcm_baudcode);
+
+                        if (!m_device->setPortConfiguration(port_config))
+                                return handleError("Could not configure RTCM input baudrate.");
+                }
+        }
+
 	return true;
 }
 
@@ -704,6 +731,7 @@ void XdaInterface::declareCommonParameters()
 	declare_parameter<std::string>("onboard_filter_profile", "");
 	declare_parameter<std::vector<std::string>>("output_configuration", {});
 	declare_parameter("config_baudrate", XsBaud::rateToNumeric(XBR_Invalid));
+        declare_parameter("rtcm_baudrate", XsBaud::rateToNumeric(XBR_Invalid));
 	declare_parameter<std::vector<XsReal>>("alignment_local_quat", {});
 	declare_parameter<std::vector<XsReal>>("alignment_sensor_quat", {});
         declare_parameter<std::vector<std::string>>("option_flags", {});
