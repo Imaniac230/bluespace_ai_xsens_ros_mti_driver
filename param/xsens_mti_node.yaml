@@ -55,6 +55,7 @@
         ## These values (if specified) will be applied to the sensor device on startup
         # Configure a new device baudrate
         config_baudrate: 921600
+        rtcm_baudrate: 921600
 
         reset_heading: false
         reset_inclination: false

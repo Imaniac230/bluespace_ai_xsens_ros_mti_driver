@@ -26,6 +26,7 @@ This branch was tested to compile and work in ROS 2.0 Humble. Compatibility with
    5. Added an `apply_current_utc_time` parameter to enable setting the current host machine local time to the MTi device on startup.
    6. Added a `gnss_lever_arm` parameter to enable configuring the sensor-relative GNSS antenna position on supported devices.
    7. Added an `initial_position_lla` parameter to enable configuring the initial LLA sensor position if not available from GNSS.
+   8. Added an `rtcm_baudrate` parameter to enable configuring the baudrate for the RTCM input port.
 5. Fixed publisher destruction errors on driver exit - refactored to unique pointers with proper destructor semantics.
 6. Properly filling in the used gnss service (`NavSatStatus`) in the `NavSatFix` ros message, based on the available satellite information status.
 
