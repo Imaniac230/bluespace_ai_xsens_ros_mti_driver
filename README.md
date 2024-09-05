@@ -4,7 +4,7 @@
 This branch was tested to compile and work in ROS 2.0 Humble. Compatibility with all supported devices should still remain unchanged. However, this version was only tested using an `MTi-680G` device, so your experience may vary. CMake minimum version was bumped to `3.5`.
 
 ### Merged PRs from the original repo:
-1. https://github.com/bluespace-ai/bluespace_ai_xsens_ros_mti_driver/pull/17
+1. <s>https://github.com/bluespace-ai/bluespace_ai_xsens_ros_mti_driver/pull/17</s> (this is now also merged in the original repo)
 2. https://github.com/bluespace-ai/bluespace_ai_xsens_ros_mti_driver/pull/11
 3. https://github.com/bluespace-ai/bluespace_ai_xsens_ros_mti_driver/pull/18
 4. https://github.com/bluespace-ai/bluespace_ai_xsens_ros_mti_driver/pull/6
